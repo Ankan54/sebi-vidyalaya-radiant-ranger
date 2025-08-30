@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block title %}SEBI Vidyalaya - Choose Your Certification Path{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 text-center">
+                <div class="hero-content">
+                    <h1 class="hero-title">
+                        <i class="fas fa-graduation-cap text-sebi-gold me-3"></i>
+                        SEBI Vidyalaya
+                    </h1>
+                    <p class="hero-subtitle">Your AI-Powered Financial Certification Companion</p>
+                    
+                    <!-- Certification Cards -->
+                    <div class="row justify-content-center mt-5">
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="certification-card" onclick="selectExam('investor_awareness')">
+                                <div class="card-icon">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <h4>SEBI Investor Awareness</h4>
+                                <p>Learn about investor protection, market regulations, and your rights as an investor.</p>
+                                <div class="card-features">
+                                    <span class="feature-badge"><i class="fas fa-clock"></i> 2-3 Hours</span>
+                                    <span class="feature-badge"><i class="fas fa-certificate"></i> Certificate</span>
+                                </div>
+                                <button class="btn btn-sebi-primary mt-3">
+                                    GET STARTED
+                                    <i class="fas fa-arrow-right ms-2"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="certification-card" onclick="selectExam('mutual_fund')">
+                                <div class="card-icon">
+                                    <i class="fas fa-building-columns"></i>
+                                </div>
+                                <h4>Mutual Fund Foundation</h4>
+                                <p>Master mutual fund operations, NAV calculations, and regulatory compliance.</p>
+                                <div class="card-features">
+                                    <span class="feature-badge"><i class="fas fa-clock"></i> 3-4 Hours</span>
+                                    <span class="feature-badge"><i class="fas fa-certificate"></i> Certificate</span>
+                                </div>
+                                <button class="btn btn-sebi-primary mt-3">
+                                    GET STARTED
+                                    <i class="fas fa-arrow-right ms-2"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="certification-card" onclick="selectExam('investment_advisor')">
+                                <div class="card-icon">
+                                    <i class="fas fa-briefcase"></i>
+                                </div>
+                                <h4>Investment Advisor L1</h4>
+                                <p>Professional certification for investment advisory services and client management.</p>
+                                <div class="card-features">
+                                    <span class="feature-badge"><i class="fas fa-clock"></i> 4-5 Hours</span>
+                                    <span class="feature-badge"><i class="fas fa-certificate"></i> Certificate</span>
+                                </div>
+                                <button class="btn btn-sebi-primary mt-3">
+                                    GET STARTED
+                                    <i class="fas fa-arrow-right ms-2"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center mb-5">
+                <h2 class="section-title">Why Choose SEBI Vidyalaya?</h2>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h5>AI-Powered Learning</h5>
+                    <p>Get instant answers to your questions with our intelligent tutoring system.</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-globe"></i>
+                    </div>
+                    <h5>8+ Languages</h5>
+                    <p>Study in your preferred language with multilingual support.</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-microphone"></i>
+                    </div>
+                    <h5>Voice Interaction</h5>
+                    <p>Ask questions using voice commands and get spoken responses.</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-camera"></i>
+                    </div>
+                    <h5>Image Recognition</h5>
+                    <p>Upload images of questions or documents for instant analysis.</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h5>24/7 Availability</h5>
+                    <p>Study anytime, anywhere with round-the-clock AI support.</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h5>SEBI Compliant</h5>
+                    <p>All content is aligned with official SEBI regulations and guidelines.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function selectExam(examType) {
+    // Add loading animation
+    const card = event.currentTarget;
+    const button = card.querySelector('.btn');
+    const originalText = button.innerHTML;
+    
+    button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Loading...';
+    button.disabled = true;
+    
+    // Simulate brief loading then redirect
+    setTimeout(() => {
+        window.location.href = `/chat/${examType}`;
+    }, 500);
+}
+
+// Add hover effects and animations
+document.addEventListener('DOMContentLoaded', function() {
+    // Animate certification cards on scroll
+    const cards = document.querySelectorAll('.certification-card');
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, observerOptions);
+    
+    cards.forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(30px)';
+        card.style.transition = 'all 0.6s ease-out';
+        observer.observe(card);
+    });
+});
+</script>
+{% endblock %}

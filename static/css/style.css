@@ -1,0 +1,445 @@
+/* SEBI Vidyalaya Custom Styles */
+
+/* CSS Variables for SEBI Brand Colors */
+:root {
+    --sebi-navy: #1B365D;
+    --sebi-gold: #F4A623;
+    --sebi-light-blue: #5DADE2;
+    --sebi-success: #28A745;
+    --sebi-background: #F8F9FA;
+    --sebi-text: #2C3E50;
+}
+
+/* Typography */
+body {
+    font-family: 'Open Sans', sans-serif;
+    color: var(--sebi-text);
+    background-color: var(--sebi-background);
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+}
+
+/* Custom Bootstrap Utilities */
+.bg-sebi-navy { background-color: var(--sebi-navy) !important; }
+.bg-sebi-gold { background-color: var(--sebi-gold) !important; }
+.bg-sebi-light-blue { background-color: var(--sebi-light-blue) !important; }
+.text-sebi-navy { color: var(--sebi-navy) !important; }
+.text-sebi-gold { color: var(--sebi-gold) !important; }
+.text-sebi-light-blue { color: var(--sebi-light-blue) !important; }
+
+/* Custom Button Styles */
+.btn-sebi-primary {
+    background-color: var(--sebi-navy);
+    border-color: var(--sebi-navy);
+    color: white;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-sebi-primary:hover {
+    background-color: var(--sebi-gold);
+    border-color: var(--sebi-gold);
+    color: var(--sebi-navy);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.btn-outline-sebi-navy {
+    border-color: var(--sebi-navy);
+    color: var(--sebi-navy);
+    background-color: transparent;
+}
+
+.btn-outline-sebi-navy:hover {
+    background-color: var(--sebi-navy);
+    border-color: var(--sebi-navy);
+    color: white;
+}
+
+/* Layout Adjustments */
+.main-content {
+    padding-top: 76px; /* Account for fixed navbar */
+    min-height: 100vh;
+}
+
+/* Landing Page Styles */
+.hero-section {
+    background: linear-gradient(135deg, var(--sebi-navy) 0%, var(--sebi-light-blue) 100%);
+    color: white;
+    padding: 80px 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="%23ffffff" fill-opacity="0.05" points="0,1000 1000,0 1000,1000"/></svg>');
+    background-size: cover;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+.hero-title {
+    font-size: 3.5rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+
+.hero-subtitle {
+    font-size: 1.3rem;
+    margin-bottom: 40px;
+    opacity: 0.9;
+}
+
+/* Certification Cards */
+.certification-card {
+    background: white;
+    border-radius: 20px;
+    padding: 40px 30px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.certification-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    transition: left 0.6s ease;
+}
+
+.certification-card:hover::before {
+    left: 100%;
+}
+
+.certification-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    border: 2px solid var(--sebi-gold);
+}
+
+.card-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--sebi-navy), var(--sebi-light-blue));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    transition: all 0.3s ease;
+}
+
+.certification-card:hover .card-icon {
+    background: linear-gradient(135deg, var(--sebi-gold), #FDB462);
+    transform: scale(1.1);
+}
+
+.card-icon i {
+    font-size: 2rem;
+    color: white;
+}
+
+.certification-card h4 {
+    color: var(--sebi-navy);
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+.certification-card p {
+    color: #666;
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+.card-features {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.feature-badge {
+    background: var(--sebi-background);
+    color: var(--sebi-navy);
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+/* Features Section */
+.features-section {
+    padding: 80px 0;
+    background: white;
+}
+
+.section-title {
+    color: var(--sebi-navy);
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 50px;
+}
+
+.feature-card {
+    text-align: center;
+    padding: 30px 20px;
+    border-radius: 15px;
+    background: var(--sebi-background);
+    height: 100%;
+    transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+    background: white;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    transform: translateY(-5px);
+}
+
+.feature-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--sebi-navy);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    transition: all 0.3s ease;
+}
+
+.feature-card:hover .feature-icon {
+    background: var(--sebi-gold);
+    transform: scale(1.1);
+}
+
+.feature-icon i {
+    font-size: 1.5rem;
+    color: white;
+}
+
+.feature-card h5 {
+    color: var(--sebi-navy);
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+.feature-card p {
+    color: #666;
+    margin-bottom: 0;
+    line-height: 1.6;
+}
+
+/* Page Header */
+.page-header {
+    border-bottom: 3px solid var(--sebi-gold);
+}
+
+.breadcrumb {
+    background: none;
+    padding: 0;
+    margin: 0;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    content: "›";
+    color: var(--sebi-gold);
+    font-weight: bold;
+}
+
+/* Chat Interface */
+.chat-input-area {
+    border-top: 3px solid var(--sebi-light-blue);
+    box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
+}
+
+.input-group .btn {
+    border-radius: 0;
+    border-right: none;
+}
+
+.input-group .btn:first-child {
+    border-top-left-radius: 25px;
+    border-bottom-left-radius: 25px;
+}
+
+.input-group .btn:last-child {
+    border-top-right-radius: 25px;
+    border-bottom-right-radius: 25px;
+    border-right: 1px solid #ced4da;
+}
+
+.input-group .form-control {
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    padding: 12px 16px;
+    font-size: 1rem;
+}
+
+.quick-actions .btn {
+    border-radius: 20px;
+    font-size: 0.9rem;
+    padding: 6px 12px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2.5rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.1rem;
+    }
+    
+    .certification-card {
+        margin-bottom: 30px;
+        padding: 30px 20px;
+    }
+    
+    .section-title {
+        font-size: 2rem;
+    }
+    
+    .main-content {
+        padding-top: 70px;
+    }
+}
+
+@media (max-width: 576px) {
+    .hero-section {
+        padding: 60px 0;
+    }
+    
+    .hero-title {
+        font-size: 2rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1rem;
+    }
+    
+    .card-features {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
+/* Animation Classes */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in-up {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.pulse {
+    animation: pulse 2s infinite;
+}
+
+/* Custom Scrollbar */
+.chat-messages::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+    background: var(--sebi-light-blue);
+    border-radius: 3px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb:hover {
+    background: var(--sebi-navy);
+}
+
+/* Loading States */
+.btn.loading {
+    position: relative;
+    color: transparent;
+}
+
+.btn.loading::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 50%;
+    left: 50%;
+    margin-left: -8px;
+    margin-top: -8px;
+    border: 2px solid transparent;
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .certification-card {
+        border: 2px solid var(--sebi-navy);
+    }
+    
+    .feature-card {
+        border: 1px solid var(--sebi-navy);
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
