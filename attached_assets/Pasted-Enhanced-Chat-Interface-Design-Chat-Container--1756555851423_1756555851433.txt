@@ -1,0 +1,50 @@
+Enhanced Chat Interface Design
+Chat Container
+┌─────────────────────────────────────────────────────┐
+│ 🤖 Welcome! I'm your SEBI tutor. You can:          │
+│    • Ask questions by typing or speaking           │
+│    • Upload images of documents or questions       │
+│    • Switch languages anytime                      │
+│                                                     │
+│ 👤 [Image uploaded: question_paper.jpg]           │
+│    Can you explain question 15 from this paper?    │
+│                                                     │
+│ 🤖 [Streaming response with typing animation...]    │
+│    Looking at your uploaded image, question 15     │
+│    is about SEBI's role in mutual fund regulation. │
+│    Let me explain...                                │
+│                                                     │
+│    📎 Related Resources:                           │
+│    🔗 SEBI (Mutual Funds) Regulations, 1996       │
+│    🔗 AMC Registration Guidelines                   │
+│                                                     │
+│ 👤 [🎤 Voice Message - 0:15]                      │
+│    "मुझे म्यूचुअल फंड के बारे में और जानकारी चाहिए" │
+│                                                     │
+│ 🤖 [Response in Hindi...]                          │
+└─────────────────────────────────────────────────────┘
+Enhanced Input Area
+┌─────────────────────────────────────────────────────┐
+│ Input Controls:                                     │
+│ [📎] [🎤] [Type your question here...        ] [📤] │
+│                                                     │
+│ Voice Status: [🔴 Recording...] [⏹️ Stop] [▶️ Play] │
+│ Transcription: "What is the role of SEBI in..."    │
+│                                                     │
+│ Quick Actions:                                      │
+│ [🔄 Ask follow-up] [📝 Take Notes] [🔊 Read Aloud] │
+└─────────────────────────────────────────────────────┘
+Detailed Feature Specifications
+1. Image Upload Feature
+Visual Design:
+Upload Button: [📎 Upload Image]
+- Hover state: Background changes to light blue
+- Click: Opens file picker (jpg, png, pdf)
+- Drag & drop zone appears when file is dragged over chat area
+
+Image Preview in Chat:
+┌─────────────────┐
+│ 📷 question.jpg │
+│ [Preview thumb] │
+│ [❌ Remove]     │
+└─────────────────┘
