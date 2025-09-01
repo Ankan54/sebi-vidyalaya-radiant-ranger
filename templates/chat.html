@@ -1,91 +1,490 @@
 {% extends "base.html" %}
 
-{% block title %}{{ exam_name }} - SEBI Vidyalaya{% endblock %}
+{% block title %}{{ exam_type }} - SEBI Vidyalaya{% endblock %}
 
 {% block head %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- Marked.js for markdown parsing -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+// Configure marked.js to support tables and other features
+marked.setOptions({
+    tables: true,
+    breaks: true,
+    gfm: true, // GitHub Flavored Markdown
+    headerIds: false,
+    mangle: false
+});
+</script>
 <style>
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+}
+
 .chat-container {
-    height: calc(100vh - 200px);
+    height: 100vh;
     display: flex;
     flex-direction: column;
+    background: white;
+    border-radius: 0;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+}
+
+.chat-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.chat-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+}
+
+.chat-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+.chat-subtitle {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    margin: 0.5rem 0 0 0;
+    position: relative;
+    z-index: 1;
 }
 
 .chat-messages {
     flex: 1;
     overflow-y: auto;
-    padding: 20px;
-    background: #f8f9fa;
+    padding: 2rem 1.5rem;
+    background: #fafafa;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
 .message {
-    margin-bottom: 20px;
-    animation: fadeInUp 0.3s ease-out;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    animation: messageSlideIn 0.3s ease-out;
 }
 
 .message-user {
-    text-align: right;
+    flex-direction: row-reverse;
 }
 
-.message-ai {
-    text-align: left;
+.message-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+    font-weight: 500;
 }
 
-.message-bubble {
-    display: inline-block;
+.message-user .message-avatar {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+}
+
+.message-ai .message-avatar {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.message-content {
     max-width: 70%;
-    padding: 12px 16px;
-    border-radius: 18px;
     position: relative;
 }
 
+.message-bubble {
+    padding: 1rem 1.25rem;
+    border-radius: 1.25rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    position: relative;
+    word-wrap: break-word;
+}
+
 .message-user .message-bubble {
-    background: var(--sebi-navy);
+    background: linear-gradient(135deg, #667eea, #764ba2);
     color: white;
+    border-bottom-right-radius: 0.5rem;
 }
 
 .message-ai .message-bubble {
     background: white;
-    color: var(--sebi-navy);
-    border: 1px solid #e9ecef;
+    color: #2d3748;
+    border: 1px solid #e2e8f0;
+    border-bottom-left-radius: 0.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
-.message-header {
-    font-size: 0.85rem;
-    margin-bottom: 5px;
-    opacity: 0.7;
+.message-time {
+    font-size: 0.75rem;
+    color: #64748b;
+    margin-top: 0.5rem;
+    text-align: center;
+}
+
+.message-user .message-time {
+    text-align: right;
+}
+
+.message-ai .message-time {
+    text-align: left;
 }
 
 .typing-indicator {
     display: flex;
     align-items: center;
-    padding: 10px 16px;
+    gap: 0.75rem;
+    padding: 1rem;
+    animation: messageSlideIn 0.3s ease-out;
+}
+
+.typing-bubble {
     background: white;
-    border-radius: 18px;
-    max-width: 70px;
+    border: 1px solid #e2e8f0;
+    border-radius: 1.25rem;
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
 .typing-dots {
     display: flex;
-    gap: 4px;
+    gap: 0.25rem;
+    align-items: center;
 }
 
 .typing-dot {
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: #adb5bd;
+    background: #cbd5e0;
     animation: typing 1.4s infinite;
 }
 
 .typing-dot:nth-child(2) { animation-delay: 0.2s; }
 .typing-dot:nth-child(3) { animation-delay: 0.4s; }
 
-@keyframes typing {
-    0%, 60%, 100% { transform: translateY(0); }
-    30% { transform: translateY(-10px); }
+.typing-text {
+    font-size: 0.9rem;
+    color: #64748b;
+    margin-left: 0.5rem;
 }
 
-@keyframes fadeInUp {
+.chat-input-container {
+    padding: 1.5rem;
+    background: white;
+    border-top: 1px solid #e2e8f0;
+}
+
+.input-wrapper {
+    position: relative;
+    background: #f8fafc;
+    border-radius: 1.5rem;
+    border: 2px solid #e2e8f0;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    padding: 0.5rem;
+}
+
+.input-wrapper:focus-within {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.message-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    resize: none;
+    outline: none;
+    font-family: inherit;
+    min-height: 44px;
+    max-height: 120px;
+}
+
+.input-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.action-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 1rem;
+}
+
+.action-btn:hover {
+    transform: scale(1.05);
+}
+
+.attach-btn {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.attach-btn:hover {
+    background: #bbdefb;
+}
+
+.voice-btn {
+    background: #f3e5f5;
+    color: #7b1fa2;
+}
+
+.voice-btn:hover {
+    background: #e1bee7;
+}
+
+.voice-btn.recording {
+    background: #ffebee;
+    color: #d32f2f;
+    animation: pulse 1.5s infinite;
+}
+
+.send-btn {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+}
+
+.send-btn:hover {
+    background: linear-gradient(135deg, #5a6fd8, #6a4190);
+}
+
+.send-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.status-indicator {
+    padding: 1rem 1.5rem;
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 0.75rem;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.status-indicator.success {
+    background: #d1edff;
+    border-color: #74c0fc;
+    color: #0c4a6e;
+}
+
+.status-indicator.error {
+    background: #fce8e6;
+    border-color: #ffa8a8;
+    color: #991b1b;
+}
+
+/* Tool usage styling */
+.tool-usage-content {
+    background: rgba(102, 126, 234, 0.1);
+    border-left: 4px solid #667eea;
+    padding: 0.75rem;
+    margin: 0.5rem 0;
+    border-radius: 0.5rem;
+    font-style: italic;
+    color: #5a67d8;
+    font-weight: 500;
+    position: relative;
+}
+
+.tool-usage-content::before {
+    content: "🔧 ";
+    font-style: normal;
+    margin-right: 0.5rem;
+}
+
+.tool-usage-content p:first-child {
+    margin-top: 0;
+}
+
+.tool-usage-content p:last-child {
+    margin-bottom: 0;
+}
+
+/* Tool usage message styling */
+.tool-usage-message .message-avatar i {
+    color: #667eea;
+}
+
+.tool-usage-bubble {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+    border: 1px solid rgba(102, 126, 234, 0.3);
+    color: #5a67d8;
+    font-style: italic;
+    font-weight: 500;
+    position: relative;
+}
+
+.tool-usage-bubble::before {
+    content: "🔧 ";
+    font-style: normal;
+    margin-right: 0.5rem;
+}
+
+/* Markdown content styling */
+.streaming-content h1,
+.streaming-content h2,
+.streaming-content h3 {
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.streaming-content h1 { font-size: 1.25rem; }
+.streaming-content h2 { font-size: 1.125rem; }
+.streaming-content h3 { font-size: 1rem; }
+
+.streaming-content ul,
+.streaming-content ol {
+    margin: 0.5rem 0;
+    padding-left: 1.5rem;
+}
+
+.streaming-content li {
+    margin-bottom: 0.25rem;
+}
+
+.streaming-content strong {
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.streaming-content em {
+    font-style: italic;
+}
+
+.streaming-content code {
+    background: #f7fafc;
+    padding: 0.125rem 0.25rem;
+    border-radius: 0.25rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.875rem;
+}
+
+.streaming-content pre {
+    background: #f7fafc;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    overflow-x: auto;
+    margin: 0.5rem 0;
+}
+
+.streaming-content blockquote {
+    border-left: 4px solid #e2e8f0;
+    padding-left: 1rem;
+    margin: 0.5rem 0;
+    font-style: italic;
+    color: #718096;
+}
+
+/* Table styling for markdown content */
+.streaming-content table,
+.message-bubble table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1rem 0;
+    font-size: 0.875rem;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.streaming-content table thead,
+.message-bubble table thead {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+}
+
+.streaming-content table th,
+.message-bubble table th {
+    padding: 0.75rem;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.streaming-content table td,
+.message-bubble table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.streaming-content table tbody tr:hover,
+.message-bubble table tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+.streaming-content table tbody tr:nth-child(even),
+.message-bubble table tbody tr:nth-child(even) {
+    background-color: #f9fafb;
+}
+
+.streaming-content table tbody tr:nth-child(even):hover,
+.message-bubble table tbody tr:nth-child(even):hover {
+    background-color: #f1f5f9;
+}
+
+/* Responsive table */
+@media (max-width: 768px) {
+    .streaming-content table,
+    .message-bubble table {
+        font-size: 0.75rem;
+    }
+    
+    .streaming-content table th,
+    .streaming-content table td,
+    .message-bubble table th,
+    .message-bubble table td {
+        padding: 0.5rem;
+    }
+}
+
+@keyframes messageSlideIn {
     from {
         opacity: 0;
         transform: translateY(20px);
@@ -95,156 +494,268 @@
         transform: translateY(0);
     }
 }
+
+@keyframes typing {
+    0%, 60%, 100% { 
+        transform: translateY(0);
+        opacity: 0.5;
+    }
+    30% { 
+        transform: translateY(-10px);
+        opacity: 1;
+    }
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Scrollbar styling */
+.chat-messages::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+    background: #cbd5e0;
+    border-radius: 3px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb:hover {
+    background: #a0aec0;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .chat-container {
+        border-radius: 0;
+        height: 100vh;
+    }
+    
+    .message-content {
+        max-width: 85%;
+    }
+    
+    .chat-header {
+        padding: 1rem;
+    }
+    
+    .chat-title {
+        font-size: 1.25rem;
+    }
+}
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid px-0">
-    <!-- Page Header -->
-    <div class="page-header bg-sebi-navy text-white py-3">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col">
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb mb-0">
-                            <li class="breadcrumb-item">
-                                <a href="{{ url_for('landing') }}" class="text-sebi-gold">
-                                    <i class="fas fa-home"></i> Home
-                                </a>
-                            </li>
-                            <li class="breadcrumb-item active text-white">{{ exam_name }}</li>
-                        </ol>
-                    </nav>
-                    <h4 class="mb-0 mt-2">
-                        <i class="fas fa-robot me-2 text-sebi-gold"></i>
-                        Smart Tutor - Ask anything about SEBI in your preferred language
-                    </h4>
+<div class="container-fluid h-100 p-0">
+    <div class="chat-container">
+        <!-- Modern Chat Header -->
+        <div class="chat-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="chat-title">
+                        <i class="fas fa-robot"></i>
+                        SEBI AI Tutor
+                    </h1>
+                    <p class="chat-subtitle">{{ exam_title }} • Instant Doubt Resolution • Adaptive Learning</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('landing') }}" class="btn btn-outline-light btn-sm">
+                        <i class="fas fa-home me-1"></i> Home
+                    </a>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Chat Interface -->
-    <div class="chat-container">
         <!-- Chat Messages -->
         <div class="chat-messages" id="chatMessages">
             <!-- Welcome Message -->
             <div class="message message-ai">
-                <div class="message-header">
-                    <i class="fas fa-robot me-1"></i> AI Tutor
+                <div class="message-avatar">
+                    <i class="fas fa-robot"></i>
                 </div>
-                <div class="message-bubble">
-                    <div class="mb-2">
-                        🤖 Welcome! I'm your SEBI tutor for <strong>{{ exam_name }}</strong>. You can:
-                    </div>
-                    <ul class="mb-0">
-                        <li>Ask questions by typing or speaking</li>
-                        <li>Upload images of documents or questions</li>
-                        <li>Switch languages anytime</li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- Load existing messages -->
-            {% for message in messages %}
-            <div class="message message-{{ message.message_type }}">
-                <div class="message-header">
-                    {% if message.message_type == 'user' %}
-                        <i class="fas fa-user me-1"></i> You
-                    {% else %}
-                        <i class="fas fa-robot me-1"></i> AI Tutor
-                    {% endif %}
-                    <span class="text-muted ms-2">{{ message.timestamp.strftime('%H:%M') }}</span>
-                </div>
-                <div class="message-bubble">
-                    {% if message.content_type == 'image' and message.file_path %}
-                        <div class="mb-2">
-                            <i class="fas fa-image me-1"></i>
-                            {{ message.meta_data.original_name if message.meta_data else 'Uploaded Image' }}
+                <div class="message-content">
+                    <div class="message-bubble">
+                        <div class="mb-3">
+                            <strong>👋 Welcome to your AI-powered SEBI tutor!</strong>
                         </div>
-                    {% endif %}
-                    {{ message.content }}
+                        <div class="mb-2">I'm here to help you with <strong>{{ exam_title }}</strong>. Here's how I can assist:</div>
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-4">
+                                <div class="d-flex align-items-center gap-2 p-2 bg-light rounded">
+                                    <i class="fas fa-comments text-primary"></i>
+                                    <small>Ask questions</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="d-flex align-items-center gap-2 p-2 bg-light rounded">
+                                    <i class="fas fa-image text-success"></i>
+                                    <small>Upload images</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="d-flex align-items-center gap-2 p-2 bg-light rounded">
+                                    <i class="fas fa-microphone text-info"></i>
+                                    <small>Voice input</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <i class="fas fa-book text-warning"></i>
+                                <strong>Please find your study materials here:</strong>
+                            </div>
+                            <div class="study-materials" style="background: #f8f9fa; padding: 1rem; border-radius: 0.5rem; border-left: 4px solid #667eea;">
+                                <div id="studyMaterialsList">
+                                    <!-- Study materials will be populated based on exam type -->
+                                    {% if exam_type == 'investor_awareness' %}
+                                        <div class="mb-2">
+                                            <i class="fas fa-file-pdf text-danger me-2"></i>
+                                            <a href="{{ url_for('static', filename='files/SEBI-Investor-Awareness-Test-FAQ.pdf') }}" target="_blank" class="text-decoration-none">
+                                                SEBI Investor Awareness Test FAQ
+                                            </a>
+                                        </div>
+                                        <div class="mb-2">
+                                            <i class="fas fa-file-pdf text-danger me-2"></i>
+                                            <a href="{{ url_for('static', filename='files/SEBI_-_Investor_Certification_Examination_-_Financial_Education_Booklet_30092024170623.pdf') }}" target="_blank" class="text-decoration-none">
+                                                Financial Education Booklet
+                                            </a>
+                                        </div>
+                                        <div class="mb-2">
+                                            <i class="fas fa-file-pdf text-danger me-2"></i>
+                                            <a href="{{ url_for('static', filename='files/SEBI_-_Investor_Certification_Examination_-_Securities_Market_Booklet_30092024170647.pdf') }}" target="_blank" class="text-decoration-none">
+                                                Securities Market Booklet
+                                            </a>
+                                        </div>
+                                        <div class="mb-2">
+                                            <i class="fas fa-file-pdf text-danger me-2"></i>
+                                            <a href="{{ url_for('static', filename='files/reading-mat-eng.pdf') }}" target="_blank" class="text-decoration-none">
+                                                SEBI Investor Awareness Workshop
+                                            </a>
+                                        </div>
+                                    {% elif exam_type == 'mf_foundation' %}
+                                        <div class="mb-2">
+                                            <i class="fas fa-file-pdf text-danger me-2"></i>
+                                            <a href="{{ url_for('static', filename='files/NISM SERIES V-B MFF Workbook 2025 May 2025.pdf') }}" target="_blank" class="text-decoration-none">
+                                                NISM Series V-B MFF Workbook 2025
+                                            </a>
+                                        </div>
+                                    {% elif exam_type == 'invest_advisor' %}
+                                        <div class="mb-2">
+                                            <i class="fas fa-file-pdf text-danger me-2"></i>
+                                            <a href="{{ url_for('static', filename='files/NISM Series X-A-Investment Adviser Level 1 - June 2025 version.pdf') }}" target="_blank" class="text-decoration-none">
+                                                NISM Series X-A Investment Adviser Level 1
+                                            </a>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="mt-3 p-2 bg-light rounded" style="border-left: 3px solid #28a745;">
+                                    <small class="text-success">
+                                        <i class="fas fa-lightbulb me-1"></i>
+                                        <strong>💡 Study Smart:</strong> Go through these materials at your own pace and feel free to ask me about any topics, concepts, or doubts you encounter. I'm here to help clarify complex ideas and make your learning journey easier!
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <small class="text-muted">Start by asking a question or uploading a document!</small>
+                    </div>
+                    <div class="message-time">Just now</div>
                 </div>
             </div>
-            {% endfor %}
         </div>
 
-        <!-- Input Area -->
-        <div class="chat-input-area bg-white border-top">
-            <div class="container py-3">
-                <!-- File Upload Status -->
-                <div id="uploadStatus" class="alert alert-info d-none">
-                    <i class="fas fa-spinner fa-spin me-2"></i>
-                    Uploading file...
-                </div>
+        <!-- Modern Input Area -->
+        <div class="chat-input-container">
+            <!-- Status Indicators -->
+            <div id="voiceStatus" class="status-indicator d-none">
+                <i class="fas fa-microphone fa-pulse"></i>
+                <span id="voiceStatusText">Listening... Speak clearly</span>
+                <button class="btn btn-sm btn-outline-danger ms-auto" onclick="stopRecording()">
+                    <i class="fas fa-stop"></i> Stop
+                </button>
+            </div>
+            <div id="transcriptionPreview" class="small text-muted mb-2"></div>
 
-                <!-- Voice Status -->
-                <div id="voiceStatus" class="alert alert-warning d-none">
-                    <div class="d-flex align-items-center">
-                        <i class="fas fa-microphone fa-pulse me-2"></i>
-                        <span id="voiceStatusText">Listening...</span>
-                        <button class="btn btn-sm btn-outline-secondary ms-auto" onclick="stopRecording()">
-                            <i class="fas fa-stop"></i> Stop
-                        </button>
-                    </div>
-                    <div id="transcriptionPreview" class="mt-2 small text-muted"></div>
-                </div>
-
-                <!-- Input Controls -->
-                <div class="input-group">
-                    <label for="fileInput" class="btn btn-outline-sebi-navy" title="Upload Image">
+            <!-- Input Wrapper -->
+            <div class="input-wrapper">
+                <textarea 
+                    id="messageInput" 
+                    class="message-input" 
+                    placeholder="Ask me anything about SEBI regulations, investment concepts, or upload an image..."
+                    onkeypress="handleKeyPress(event)"
+                    rows="1"></textarea>
+                
+                <div class="input-actions">
+                    <label for="fileInput" class="action-btn attach-btn" title="Upload Image">
                         <i class="fas fa-paperclip"></i>
                     </label>
-                    <input type="file" id="fileInput" class="d-none" accept="image/*,.pdf">
+                    <input type="file" id="fileInput" class="d-none" accept=".png,.jpg,.jpeg">
                     
-                    <button class="btn btn-outline-sebi-navy" id="voiceBtn" onclick="toggleRecording()" title="Voice Input">
+                    <button class="action-btn voice-btn" id="voiceBtn" onclick="toggleRecording()" title="Voice Input">
                         <i class="fas fa-microphone"></i>
                     </button>
                     
-                    <input type="text" class="form-control" id="messageInput" 
-                           placeholder="Type your question here..." 
-                           onkeypress="handleKeyPress(event)">
-                    
-                    <button class="btn btn-sebi-primary" onclick="sendMessage()" id="sendBtn">
+                    <button class="action-btn send-btn" onclick="sendMessage()" id="sendBtn">
                         <i class="fas fa-paper-plane"></i>
                     </button>
                 </div>
+            </div>
 
-                <!-- Quick Actions -->
-                <div class="quick-actions mt-2">
-                    <button class="btn btn-sm btn-outline-secondary me-2" onclick="askFollowUp()">
-                        <i class="fas fa-redo me-1"></i> Ask follow-up
-                    </button>
-                    <button class="btn btn-sm btn-outline-secondary me-2" onclick="takeNotes()">
-                        <i class="fas fa-sticky-note me-1"></i> Take Notes
-                    </button>
-                    <button class="btn btn-sm btn-outline-secondary" onclick="readAloud()">
-                        <i class="fas fa-volume-up me-1"></i> Read Aloud
-                    </button>
-                </div>
+            <!-- Quick Actions -->
+            <div class="d-flex gap-2 mt-3 flex-wrap">
+                <button class="btn btn-sm btn-outline-secondary" onclick="askFollowUp()">
+                    <i class="fas fa-plus me-1"></i> Follow-up
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" onclick="clearChat()">
+                    <i class="fas fa-eraser me-1"></i> Clear Chat
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" onclick="readAloud()">
+                    <i class="fas fa-volume-up me-1"></i> Read Aloud
+                </button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Image Preview Modal -->
+<!-- Modern Image Preview Modal -->
 <div class="modal fade" id="imagePreviewModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Image Preview</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-gradient border-0">
+                <h5 class="modal-title fw-600">
+                    <i class="fas fa-image me-2 text-primary"></i>
+                    Image Preview
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body text-center">
-                <img id="previewImage" class="img-fluid" src="" alt="Preview">
-                <div class="mt-3">
-                    <span id="fileName" class="badge bg-sebi-navy"></span>
+            <div class="modal-body p-4">
+                <div class="text-center">
+                    <img id="previewImage" class="img-fluid rounded-3 shadow-sm" src="" alt="Preview" style="max-height: 400px;">
+                    <div class="mt-3">
+                        <span id="fileName" class="badge bg-primary px-3 py-2 fs-6"></span>
+                    </div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-sebi-primary" onclick="confirmImageUpload()">
-                    <i class="fas fa-upload me-1"></i> Upload & Send
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i> Cancel
+                </button>
+                <button type="button" class="btn btn-primary" onclick="confirmImageUpload()">
+                    <i class="fas fa-check me-1"></i> Add to Chat
                 </button>
             </div>
         </div>
@@ -256,59 +767,26 @@
 <script src="{{ url_for('static', filename='js/speech.js') }}"></script>
 <script>
 // Global variables
-const sessionId = {{ session_id }};
-let socket = null;
-let currentFileInfo = null;
+const examType = "{{ exam_type }}";
+let currentImageData = null;
 let isRecording = false;
-let speechRecognition = null;
+let mediaRecorder = null;
+let audioStream = null;
+let audioChunks = [];
+let chatHistory = [];
 
 // Initialize when page loads
 document.addEventListener('DOMContentLoaded', function() {
-    initializeSocket();
     initializeFileUpload();
     scrollToBottom();
+    
+    // Always set language to English when opening chat interface
+    localStorage.setItem('selectedLanguage', 'en-US');
+    
+    // Update navbar to show current language
+    updateCurrentLanguageDisplay();
 });
 
-function initializeSocket() {
-    socket = io();
-    
-    socket.on('connect', function() {
-        console.log('Connected to server');
-        socket.emit('join_session', {session_id: sessionId});
-    });
-    
-    socket.on('new_message', function(data) {
-        displayMessage(data);
-        scrollToBottom();
-    });
-    
-    socket.on('ai_response_start', function(data) {
-        showTypingIndicator();
-    });
-    
-    socket.on('ai_response_chunk', function(data) {
-        updateStreamingResponse(data);
-    });
-    
-    socket.on('ai_response_end', function(data) {
-        hideTypingIndicator();
-        displayMessage(data);
-        scrollToBottom();
-    });
-    
-    socket.on('error', function(data) {
-        showError(data.message);
-    });
-    
-    socket.on('speech_result', function(data) {
-        updateTranscription(data);
-    });
-    
-    socket.on('speech_error', function(data) {
-        showError('Speech recognition error: ' + data.message);
-        stopRecording();
-    });
-}
 
 function initializeFileUpload() {
     const fileInput = document.getElementById('fileInput');
@@ -331,7 +809,7 @@ function sendMessage() {
     const messageInput = document.getElementById('messageInput');
     const message = messageInput.value.trim();
     
-    if (!message && !currentFileInfo) {
+    if (!message && !currentImageData) {
         return;
     }
     
@@ -339,20 +817,241 @@ function sendMessage() {
     const sendBtn = document.getElementById('sendBtn');
     sendBtn.disabled = true;
     
-    socket.emit('send_message', {
-        session_id: sessionId,
-        message: message,
-        type: currentFileInfo ? 'image' : 'text',
-        file_info: currentFileInfo
+    // Create user message object
+    let userMessage;
+    if (currentImageData) {
+        const contentArray = [];
+        
+        // Add text content if message exists
+        if (message && message.trim()) {
+            contentArray.push({
+                'type': 'text',
+                'text': message
+            });
+        }
+        
+        // Add image content
+        contentArray.push({
+            'type': 'image_url',
+            'image_url': {
+                'url': currentImageData.base64
+            }
+        });
+        
+        userMessage = {
+            'role': 'user',
+            'content': contentArray
+        };
+    } else {
+        userMessage = {
+            'role': 'user',
+            'content': message
+        };
+    }
+    
+    // Add user message to chat history
+    chatHistory.push(userMessage);
+    
+    // Display user message immediately
+    displayMessage({
+        id: Date.now(),
+        type: 'user',
+        content: userMessage.content,
+        timestamp: new Date().toISOString()
     });
     
-    // Clear input and file info
-    messageInput.value = '';
-    currentFileInfo = null;
+    // Show typing indicator
+    showTypingIndicator();
     
-    setTimeout(() => {
+    // Send chat history to backend with SSE streaming
+    handleStreamingResponse({
+        exam_type: examType,
+        chat_history: chatHistory,
+        language: getCurrentLanguage()
+    }, sendBtn);
+    
+    // Clear input and image data
+    messageInput.value = '';
+    messageInput.placeholder = 'Type your question here...';
+    currentImageData = null;
+}
+
+function handleStreamingResponse(requestData, sendBtn) {
+    let currentAiMessage = null;
+    let aiMessageContent = '';
+    
+    fetch('/send_message', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData)
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        
+        function processStream() {
+            return reader.read().then(({ done, value }) => {
+                if (done) {
+                    hideTypingIndicator();
+                    sendBtn.disabled = false;
+                    
+                    // Add final AI response to chat history
+                    if (aiMessageContent) {
+                        chatHistory.push({
+                            'role': 'assistant',
+                            'content': aiMessageContent
+                        });
+                    }
+                    return;
+                }
+                
+                const chunk = decoder.decode(value, { stream: true });
+                const lines = chunk.split('\n');
+                
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        const data = line.slice(6);
+                        
+                        if (data === '[DONE]') {
+                            hideTypingIndicator();
+                            sendBtn.disabled = false;
+                            if (aiMessageContent) {
+                                chatHistory.push({
+                                    'role': 'assistant',
+                                    'content': aiMessageContent
+                                });
+                            }
+                            return;
+                        }
+                        
+                        try {
+                            const parsed = JSON.parse(data);
+                            
+                            if (parsed.type === 'content' || parsed.type === 'final_content') {
+                                hideTypingIndicator();
+                                
+                                // Create AI message if it doesn't exist
+                                if (!currentAiMessage) {
+                                    currentAiMessage = createStreamingMessage();
+                                }
+                                
+                                // Append content to the streaming message
+                                aiMessageContent += parsed.content;
+                                updateStreamingMessage(currentAiMessage, aiMessageContent);
+                                scrollToBottom();
+                                
+                            } else if (parsed.type === 'tool_usage') {
+                                // Show tool usage indicator immediately as separate message
+                                hideTypingIndicator();
+                                displayToolUsageMessage(parsed.content.replace(/\\n/g, '\n'));
+                                scrollToBottom();
+                                
+                            } else if (parsed.type === 'newline') {
+                                if (currentAiMessage) {
+                                    // Replace \n with actual line breaks
+                                    const newlineContent = parsed.content.replace(/\\n/g, '\n');
+                                    aiMessageContent += newlineContent;
+                                    updateStreamingMessage(currentAiMessage, aiMessageContent);
+                                    scrollToBottom();
+                                }
+                                
+                            } else if (parsed.type === 'error') {
+                                hideTypingIndicator();
+                                showError(parsed.content);
+                                sendBtn.disabled = false;
+                                return;
+                            }
+                        } catch (e) {
+                            console.error('Error parsing SSE data:', e, data);
+                        }
+                    }
+                }
+                
+                return processStream();
+            });
+        }
+        
+        return processStream();
+    })
+    .catch(error => {
+        console.error('Streaming error:', error);
+        hideTypingIndicator();
+        showError('Failed to send message');
         sendBtn.disabled = false;
-    }, 1000);
+    });
+}
+
+function createStreamingMessage() {
+    const chatMessages = document.getElementById('chatMessages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'message message-ai';
+    messageDiv.id = 'streamingMessage';
+    
+    const time = new Date().toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+    
+    messageDiv.innerHTML = `
+        <div class="message-avatar">
+            <i class="fas fa-robot"></i>
+        </div>
+        <div class="message-content">
+            <div class="message-bubble">
+                <div class="streaming-content"></div>
+            </div>
+            <div class="message-time">${time}</div>
+        </div>
+    `;
+    
+    chatMessages.appendChild(messageDiv);
+    return messageDiv;
+}
+
+function updateStreamingMessage(messageElement, content, isToolUsage = false) {
+    const contentDiv = messageElement.querySelector('.streaming-content');
+    if (contentDiv) {
+        // Preserve line breaks and parse markdown
+        const processedContent = content.replace(/\n/g, '\n\n'); // Double newlines for markdown paragraph breaks
+        const htmlContent = marked.parse(processedContent);
+        contentDiv.innerHTML = htmlContent;
+        
+        // Add special styling for tool usage messages
+        if (isToolUsage) {
+            contentDiv.classList.add('tool-usage-content');
+        }
+    }
+}
+
+function displayToolUsageMessage(content) {
+    const chatMessages = document.getElementById('chatMessages');
+    const toolMessageDiv = document.createElement('div');
+    toolMessageDiv.className = 'message message-ai tool-usage-message';
+    
+    const time = new Date().toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+    
+    toolMessageDiv.innerHTML = `
+        <div class="message-avatar">
+            <i class="fas fa-cog fa-spin"></i>
+        </div>
+        <div class="message-content">
+            <div class="message-bubble tool-usage-bubble">
+                ${content}
+            </div>
+            <div class="message-time">${time}</div>
+        </div>
+    `;
+    
+    chatMessages.appendChild(toolMessageDiv);
 }
 
 function displayMessage(messageData) {
@@ -365,24 +1064,46 @@ function displayMessage(messageData) {
         minute: '2-digit'
     });
     
+    // Handle different content formats
+    let contentHtml = '';
+    if (Array.isArray(messageData.content)) {
+        // New format: content is array with text and image_url objects
+        messageData.content.forEach(item => {
+            if (item.type === 'text') {
+                contentHtml += `<div class="mb-2">${item.text}</div>`;
+            } else if (item.type === 'image_url') {
+                contentHtml += `
+                    <div class="mb-3">
+                        <img src="${item.image_url.url}" class="img-fluid rounded-3 shadow-sm" style="max-width: 280px;" alt="Uploaded image">
+                    </div>
+                `;
+            }
+        });
+    } else {
+        // Simple text content - parse markdown for AI messages
+        if (messageData.type === 'ai') {
+            const processedContent = messageData.content.replace(/\n/g, '\n\n');
+            contentHtml = marked.parse(processedContent);
+        } else {
+            contentHtml = messageData.content;
+        }
+    }
+    
+    // Modern message structure matching the welcome message
     messageDiv.innerHTML = `
-        <div class="message-header">
-            <i class="fas fa-${messageData.type === 'user' ? 'user' : 'robot'} me-1"></i>
-            ${messageData.type === 'user' ? 'You' : 'AI Tutor'}
-            <span class="text-muted ms-2">${time}</span>
+        <div class="message-avatar">
+            <i class="fas fa-${messageData.type === 'user' ? 'user' : 'robot'}"></i>
         </div>
-        <div class="message-bubble">
-            ${messageData.file_info ? `
-                <div class="mb-2">
-                    <i class="fas fa-image me-1"></i>
-                    ${messageData.file_info.original_name}
-                </div>
-            ` : ''}
-            ${messageData.content}
+        <div class="message-content">
+            <div class="message-bubble">
+                ${contentHtml}
+            </div>
+            <div class="message-time">${time}</div>
         </div>
     `;
     
     chatMessages.appendChild(messageDiv);
+    scrollToBottom();
 }
 
 function showTypingIndicator() {
@@ -464,50 +1185,43 @@ function previewImage(file) {
         return;
     }
     
+    // Validate file type
+    const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+    if (!allowedTypes.includes(file.type)) {
+        showError('Please upload PNG, JPG, or JPEG images only.');
+        return;
+    }
+    
     const reader = new FileReader();
     reader.onload = function(e) {
         document.getElementById('previewImage').src = e.target.result;
         document.getElementById('fileName').textContent = file.name;
+        
+        // Store image data for sending
+        currentImageData = {
+            base64: e.target.result,
+            filename: file.name,
+            type: file.type
+        };
+        
         new bootstrap.Modal(document.getElementById('imagePreviewModal')).show();
     };
     reader.readAsDataURL(file);
-    
-    // Store file for upload
-    window.pendingFile = file;
 }
 
 function confirmImageUpload() {
-    const file = window.pendingFile;
-    if (!file) return;
+    if (!currentImageData) return;
     
-    const formData = new FormData();
-    formData.append('file', file);
+    // Update message input placeholder
+    document.getElementById('messageInput').placeholder = `Image selected: ${currentImageData.filename}. Type your question...`;
     
-    // Show upload status
-    const uploadStatus = document.getElementById('uploadStatus');
-    uploadStatus.classList.remove('d-none');
+    // Hide modal
+    bootstrap.Modal.getInstance(document.getElementById('imagePreviewModal')).hide();
     
-    fetch('/upload_image', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        uploadStatus.classList.add('d-none');
-        
-        if (data.success) {
-            currentFileInfo = data;
-            document.getElementById('messageInput').placeholder = `Image uploaded: ${data.original_name}. Type your question...`;
-            bootstrap.Modal.getInstance(document.getElementById('imagePreviewModal')).hide();
-        } else {
-            showError(data.error);
-        }
-    })
-    .catch(error => {
-        uploadStatus.classList.add('d-none');
-        showError('Upload failed. Please try again.');
-    });
+    // Focus on message input
+    document.getElementById('messageInput').focus();
 }
+
 
 // Voice functions
 function toggleRecording() {
@@ -518,61 +1232,56 @@ function toggleRecording() {
     }
 }
 
-function startRecording() {
-    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-        showError('Speech recognition not supported in this browser.');
-        return;
-    }
-    
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    speechRecognition = new SpeechRecognition();
-    
-    speechRecognition.continuous = true;
-    speechRecognition.interimResults = true;
-    speechRecognition.lang = getCurrentLanguage();
-    
-    speechRecognition.onstart = function() {
+async function startRecording() {
+    try {
+        // Get user media
+        audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        
+        // Create MediaRecorder
+        mediaRecorder = new MediaRecorder(audioStream, {
+            mimeType: 'audio/webm;codecs=opus'
+        });
+        
+        audioChunks = [];
+        
+        mediaRecorder.ondataavailable = function(event) {
+            if (event.data.size > 0) {
+                audioChunks.push(event.data);
+                // Send audio chunk for real-time transcription
+                sendAudioChunkForTranscription(event.data);
+            }
+        };
+        
+        mediaRecorder.onstop = function() {
+            // Final transcription when recording stops
+            if (audioChunks.length > 0) {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                sendFinalAudioForTranscription(audioBlob);
+            }
+        };
+        
+        // Start recording
         isRecording = true;
         updateVoiceButton();
         showVoiceStatus();
-    };
-    
-    speechRecognition.onresult = function(event) {
-        let interimTranscript = '';
-        let finalTranscript = '';
         
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-            const transcript = event.results[i][0].transcript;
-            if (event.results[i].isFinal) {
-                finalTranscript += transcript;
-            } else {
-                interimTranscript += transcript;
-            }
-        }
+        // Start recording with chunks every 1 second for real-time processing
+        mediaRecorder.start(1000);
         
-        const preview = document.getElementById('transcriptionPreview');
-        preview.textContent = finalTranscript + interimTranscript;
-        
-        if (finalTranscript) {
-            document.getElementById('messageInput').value = finalTranscript;
-        }
-    };
-    
-    speechRecognition.onerror = function(event) {
-        showError('Speech recognition error: ' + event.error);
-        stopRecording();
-    };
-    
-    speechRecognition.onend = function() {
-        stopRecording();
-    };
-    
-    speechRecognition.start();
+    } catch (error) {
+        console.error('Error starting recording:', error);
+        showError('Microphone access denied or not available.');
+    }
 }
 
 function stopRecording() {
-    if (speechRecognition) {
-        speechRecognition.stop();
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+    }
+    
+    if (audioStream) {
+        audioStream.getTracks().forEach(track => track.stop());
+        audioStream = null;
     }
     
     isRecording = false;
@@ -605,21 +1314,320 @@ function hideVoiceStatus() {
 }
 
 function getCurrentLanguage() {
-    return localStorage.getItem('selectedLanguage') || 'en-US';
+    const lang = localStorage.getItem('selectedLanguage') || 'en-US';
+    console.log('Current language:', lang); // Debug logging
+    return lang;
 }
 
-// Language functions
+function updateCurrentLanguageDisplay() {
+    const lang = getCurrentLanguage();
+    const langNames = {
+        'en-US': 'English',
+        'hi-IN': 'हिन्दी', 
+        'bn-IN': 'বাংলা',
+        'mr-IN': 'मराठी',
+        'kn-IN': 'ಕನ್ನಡ',
+        'gu-IN': 'ગુજરાતી'
+    };
+    
+    const currentLangElement = document.getElementById('current-language');
+    if (currentLangElement) {
+        currentLangElement.textContent = langNames[lang] || 'English';
+    }
+}
+
+// New functions for Google Cloud Speech API
+async function sendAudioChunkForTranscription(audioBlob) {
+    try {
+        const currentLang = getCurrentLanguage();
+        console.log('Sending audio chunk:', {
+            blobSize: audioBlob.size,
+            blobType: audioBlob.type,
+            language: currentLang,
+            streaming: true
+        });
+        
+        const formData = new FormData();
+        formData.append('audio_data', audioBlob);
+        formData.append('language', currentLang);
+        formData.append('streaming', 'true');
+        
+        const response = await fetch('/transcribe', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        console.log('Transcription result:', result);
+        
+        if (result.success && result.transcript) {
+            // Update transcription preview with interim results
+            document.getElementById('transcriptionPreview').textContent = result.transcript;
+        }
+    } catch (error) {
+        console.error('Real-time transcription error:', error);
+    }
+}
+
+async function sendFinalAudioForTranscription(audioBlob) {
+    try {
+        const currentLang = getCurrentLanguage();
+        console.log('Sending final audio:', {
+            blobSize: audioBlob.size,
+            blobType: audioBlob.type,
+            language: currentLang,
+            streaming: false
+        });
+        
+        const formData = new FormData();
+        formData.append('audio_data', audioBlob);
+        formData.append('language', currentLang);
+        formData.append('streaming', 'false');
+        
+        const response = await fetch('/transcribe', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        console.log('Final transcription result:', result);
+        
+        if (result.success && result.transcript) {
+            // Set final transcript in input box
+            document.getElementById('messageInput').value = result.transcript;
+            document.getElementById('transcriptionPreview').textContent = '';
+        } else {
+            console.error('Transcription failed:', result.error || 'No transcript returned');
+        }
+    } catch (error) {
+        console.error('Final transcription error:', error);
+        showError('Transcription failed. Please try again.');
+    }
+}
+
+// Language functions with multilingual welcome messages
+const welcomeMessages = {
+    'en-US': {
+        title: '👋 Welcome to your AI-powered SEBI tutor!',
+        subtitle: 'Here\'s how I can assist:',
+        features: {
+            questions: 'Ask questions',
+            images: 'Upload images', 
+            voice: 'Voice input'
+        },
+        studyMaterials: 'Please find your study materials here:',
+        encouragement: '💡 Study Smart: Go through these materials at your own pace and feel free to ask me about any topics, concepts, or doubts you encounter. I\'m here to help clarify complex ideas and make your learning journey easier!',
+        cta: 'Start by asking a question or uploading a document!'
+    },
+    'hi-IN': {
+        title: '👋 आपके AI-संचालित SEBI ट्यूटर में आपका स्वागत है!',
+        subtitle: 'मैं इस तरह आपकी सहायता कर सकता हूं:',
+        features: {
+            questions: 'प्रश्न पूछें',
+            images: 'छवियां अपलोड करें',
+            voice: 'आवाज इनपुट'
+        },
+        studyMaterials: 'कृपया यहाँ अपनी अध्ययन सामग्री देखें:',
+        encouragement: '💡 स्मार्ट पढ़ाई: इन सामग्रियों को अपनी गति से पढ़ें और किसी भी विषय, अवधारणा या संदेह के बारे में बेझिझक पूछें। मैं जटिल विचारों को स्पष्ट करने और आपकी सीखने की यात्रा को आसान बनाने में आपकी मदद करने के लिए यहाँ हूँ!',
+        cta: 'कोई प्रश्न पूछकर या दस्तावेज़ अपलोड करके शुरू करें!'
+    },
+    'bn-IN': {
+        title: '👋 আপনার AI-চালিত SEBI টিউটরে স্বাগতম!',
+        subtitle: 'আমি কীভাবে আপনাকে সাহায্য করতে পারি:',
+        features: {
+            questions: 'প্রশ্ন করুন',
+            images: 'ছবি আপলোড করুন',
+            voice: 'ভয়েস ইনপুট'
+        },
+        studyMaterials: 'অনুগ্রহ করে এখানে আপনার অধ্যয়ন উপকরণ দেখুন:',
+        encouragement: '💡 স্মার্ট পড়াশোনা: এই উপকরণগুলো আপনার নিজের গতিতে পড়ুন এবং যেকোনো বিষয়, ধারণা বা সন্দেহ নিয়ে নির্দ্বিধায় আমাকে জিজ্ঞেস করুন। জটিল বিষয়গুলো পরিষ্কার করতে এবং আপনার শেখার যাত্রা সহজ করতে আমি এখানে আছি!',
+        cta: 'একটি প্রশ্ন জিজ্ঞেস করে বা একটি নথি আপলোড করে শুরু করুন!'
+    },
+    'mr-IN': {
+        title: '👋 तुमच्या AI-चालित SEBI ट्यूटरमध्ये तुमचे स्वागत आहे!',
+        subtitle: 'मी तुम्हाला कसे मदत करू शकतो:',
+        features: {
+            questions: 'प्रश्न विचारा',
+            images: 'प्रतिमा अपलोड करा',
+            voice: 'आवाज इनपुट'
+        },
+        studyMaterials: 'कृपया येथे तुमची अभ्यास सामग्री पहा:',
+        encouragement: '💡 स्मार्ट अभ्यास: ही सामग्री तुमच्या गतीने वाचा आणि कोणत्याही विषयाबद्दल, संकल्पनेबद्दल किंवा शंकांबद्दल मला निसंकोचपणे विचारा। जटिल कल्पना स्पष्ट करण्यासाठी आणि तुमचा शिक्षणाचा प्रवास सोपा करण्यासाठी मी येथे आहे!',
+        cta: 'प्रश्न विचारून किंवा दस्तऐवज अपलोड करून सुरुवात करा!'
+    },
+    'kn-IN': {
+        title: '👋 ನಿಮ್ಮ AI-ಚಾಲಿತ SEBI ಟ್ಯೂಟರ್‌ಗೆ ಸುಸ್ವಾಗತ!',
+        subtitle: 'ನಾನು ಹೇಗೆ ಸಹಾಯ ಮಾಡಬಹುದು:',
+        features: {
+            questions: 'ಪ್ರಶ್ನೆಗಳನ್ನು ಕೇಳಿ',
+            images: 'ಚಿತ್ರಗಳನ್ನು ಅಪ್‌ಲೋಡ್ ಮಾಡಿ',
+            voice: 'ಧ್ವನಿ ಇನ್‌ಪುಟ್'
+        },
+        studyMaterials: 'ದಯವಿಟ್ಟು ಇಲ್ಲಿ ನಿಮ್ಮ ಅಧ್ಯಯನ ಸಾಮಗ್ರಿಗಳನ್ನು ನೋಡಿ:',
+        encouragement: '💡 ಸ್ಮಾರ್ಟ್ ಅಧ್ಯಯನ: ಈ ಸಾಮಗ್ರಿಗಳನ್ನು ನಿಮ್ಮ ವೇಗದಲ್ಲಿ ಅಧ್ಯಯನ ಮಾಡಿ ಮತ್ತು ಯಾವುದೇ ವಿಷಯಗಳು, ಪರಿಕಲ್ಪನೆಗಳು ಅಥವಾ ಅನುಮಾನಗಳ ಬಗ್ಗೆ ನಿರ್ದ್ವಿಧೆಯಿಂದ ನನ್ನನ್ನು ಕೇಳಿ। ಸಂಕೀರ್ಣ ವಿಚಾರಗಳನ್ನು ಸ್ಪಷ್ಟಪಡಿಸಲು ಮತ್ತು ನಿಮ್ಮ ಕಲಿಕೆಯ ಪ್ರಯಾಣವನ್ನು ಸುಲಭಗೊಳಿಸಲು ನಾನು ಇಲ್ಲಿದ್ದೇನೆ!',
+        cta: 'ಪ್ರಶ್ನೆ ಕೇಳುವ ಮೂಲಕ ಅಥವಾ ದಾಖಲೆ ಅಪ್‌ಲೋಡ್ ಮಾಡುವ ಮೂಲಕ ಪ್ರಾರಂಭಿಸಿ!'
+    },
+    'gu-IN': {
+        title: '👋 તમારા AI-સંચાલિત SEBI ટ્યૂટરમાં આપનું સ્વાગત છે!',
+        subtitle: 'હું કેવી રીતે મદદ કરી શકું:',
+        features: {
+            questions: 'પ્રશ્નો પૂછો',
+            images: 'છબીઓ અપલોડ કરો',
+            voice: 'વૉઇસ ઇનપુટ'
+        },
+        studyMaterials: 'કૃપા કરીને અહીં તમારી અધ્યયયન સામગ્રી જુઓ:',
+        encouragement: '💡 સ્માર્ટ અભ્યાસ: આ સામગ્રીઓ તમારી ગતિએ વાંચો અને કોઈપણ વિષયો, વિભાવનાઓ કે શંકાઓ વિશે નિઃસંકોચ મને પૂછો। જટિલ વિચારોને સ્પષ્ટ કરવા અને તમારી શીખવાની યાત્રાને સરળ બનાવવા માટે હું અહીં છું!',
+        cta: 'પ્રશ્ન પૂછીને અથવા દસ્તાવેજ અપલોડ કરીને શરૂ કરો!'
+    }
+};
+
 function changeLanguage(langCode, langName) {
+    // Store language preference locally
     localStorage.setItem('selectedLanguage', langCode);
     document.getElementById('current-language').textContent = langName;
     
-    fetch('/set_language', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({language: langCode})
-    });
+    // Clear current chat and show new welcome message
+    resetChatWithLanguage(langCode);
+}
+
+function getStudyMaterialsHtml() {
+    // Get the exam type from the global variable or URL
+    const currentExamType = examType || 'default';
+    
+    if (currentExamType === 'investor_awareness') {
+        return `
+            <div class="mb-2">
+                <i class="fas fa-file-pdf text-danger me-2"></i>
+                <a href="/static/files/SEBI-Investor-Awareness-Test-FAQ.pdf" target="_blank" class="text-decoration-none">
+                    SEBI Investor Awareness Test FAQ
+                </a>
+            </div>
+            <div class="mb-2">
+                <i class="fas fa-file-pdf text-danger me-2"></i>
+                <a href="/static/files/SEBI_-_Investor_Certification_Examination_-_Financial_Education_Booklet_30092024170623.pdf" target="_blank" class="text-decoration-none">
+                    Financial Education Booklet
+                </a>
+            </div>
+            <div class="mb-2">
+                <i class="fas fa-file-pdf text-danger me-2"></i>
+                <a href="/static/files/SEBI_-_Investor_Certification_Examination_-_Securities_Market_Booklet_30092024170647.pdf" target="_blank" class="text-decoration-none">
+                    Securities Market Booklet
+                </a>
+            </div>
+            <div class="mb-2">
+                <i class="fas fa-file-pdf text-danger me-2"></i>
+                <a href="/static/files/reading-mat-eng.pdf" target="_blank" class="text-decoration-none">
+                    SEBI Investor Awareness Workshop
+                </a>
+            </div>
+        `;
+    } else if (currentExamType === 'mf_foundation') {
+        return `
+            <div class="mb-2">
+                <i class="fas fa-file-pdf text-danger me-2"></i>
+                <a href="/static/files/NISM SERIES V-B MFF Workbook 2025 May 2025.pdf" target="_blank" class="text-decoration-none">
+                    NISM Series V-B MFF Workbook 2025
+                </a>
+            </div>
+        `;
+    } else if (currentExamType === 'invest_advisor') {
+        return `
+            <div class="mb-2">
+                <i class="fas fa-file-pdf text-danger me-2"></i>
+                <a href="/static/files/NISM Series X-A-Investment Adviser Level 1 - June 2025 version.pdf" target="_blank" class="text-decoration-none">
+                    NISM Series X-A Investment Adviser Level 1
+                </a>
+            </div>
+        `;
+    } else {
+        return `
+            <div class="mb-2">
+                <i class="fas fa-file-pdf text-danger me-2"></i>
+                <a href="/static/files/reading-mat-eng.pdf" target="_blank" class="text-decoration-none">
+                    General Reading Material
+                </a>
+            </div>
+        `;
+    }
+}
+
+function resetChatWithLanguage(langCode) {
+    // Clear chat messages but keep the structure
+    const chatMessages = document.getElementById('chatMessages');
+    chatMessages.innerHTML = '';
+    
+    // Reset chat history
+    chatHistory = [
+        // {
+        //     'role': 'system',
+        //     'content': 'You are a helpful AI tutor for SEBI certification exam preparation.'
+        // }
+    ];
+    
+    // Get welcome message for the selected language
+    const welcome = welcomeMessages[langCode] || welcomeMessages['en-US'];
+    
+    // Create new welcome message in selected language
+    const welcomeDiv = document.createElement('div');
+    welcomeDiv.className = 'message message-ai';
+    
+    welcomeDiv.innerHTML = `
+        <div class="message-avatar">
+            <i class="fas fa-robot"></i>
+        </div>
+        <div class="message-content">
+            <div class="message-bubble">
+                <div class="mb-3">
+                    <strong>${welcome.title}</strong>
+                </div>
+                <div class="mb-2">${welcome.subtitle}</div>
+                <div class="row g-2 mb-3">
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-center gap-2 p-2 bg-light rounded">
+                            <i class="fas fa-comments text-primary"></i>
+                            <small>${welcome.features.questions}</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-center gap-2 p-2 bg-light rounded">
+                            <i class="fas fa-image text-success"></i>
+                            <small>${welcome.features.images}</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-center gap-2 p-2 bg-light rounded">
+                            <i class="fas fa-microphone text-info"></i>
+                            <small>${welcome.features.voice}</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <i class="fas fa-book text-warning"></i>
+                        <strong>${welcome.studyMaterials}</strong>
+                    </div>
+                    <div class="study-materials" style="background: #f8f9fa; padding: 1rem; border-radius: 0.5rem; border-left: 4px solid #667eea;">
+                        <div id="studyMaterialsList">
+                            ${getStudyMaterialsHtml()}
+                        </div>
+                        <div class="mt-3 p-2 bg-light rounded" style="border-left: 3px solid #28a745;">
+                            <small class="text-success">
+                                <i class="fas fa-lightbulb me-1"></i>
+                                <strong>${welcome.encouragement}</strong>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                
+                <small class="text-muted">${welcome.cta}</small>
+            </div>
+            <div class="message-time">Just now</div>
+        </div>
+    `;
+    
+    chatMessages.appendChild(welcomeDiv);
+    scrollToBottom();
 }
 
 // Quick action functions
@@ -642,5 +1650,52 @@ function readAloud() {
         showError('Speech synthesis not available.');
     }
 }
+
+// Additional modern UI functions
+function clearChat() {
+    const chatMessages = document.getElementById('chatMessages');
+    // Keep only the welcome message
+    const welcomeMessage = chatMessages.querySelector('.message-ai');
+    chatMessages.innerHTML = '';
+    if (welcomeMessage) {
+        chatMessages.appendChild(welcomeMessage);
+    }
+    
+    // Reset chat history
+    chatHistory = [];
+}
+
+function updateVoiceButton() {
+    const voiceBtn = document.getElementById('voiceBtn');
+    
+    if (isRecording) {
+        voiceBtn.classList.add('recording');
+        voiceBtn.querySelector('i').className = 'fas fa-stop';
+    } else {
+        voiceBtn.classList.remove('recording');
+        voiceBtn.querySelector('i').className = 'fas fa-microphone';
+    }
+}
+
+function showVoiceStatus() {
+    document.getElementById('voiceStatus').classList.remove('d-none');
+}
+
+function hideVoiceStatus() {
+    document.getElementById('voiceStatus').classList.add('d-none');
+    document.getElementById('transcriptionPreview').textContent = '';
+}
+
+// Auto-resize textarea
+document.addEventListener('DOMContentLoaded', function() {
+    const textarea = document.getElementById('messageInput');
+    
+    textarea.addEventListener('input', function() {
+        this.style.height = 'auto';
+        const maxHeight = 120;
+        const newHeight = Math.min(this.scrollHeight, maxHeight);
+        this.style.height = newHeight + 'px';
+    });
+});
 </script>
 {% endblock %}

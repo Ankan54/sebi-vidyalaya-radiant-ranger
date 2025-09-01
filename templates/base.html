@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}SEBI Vidyalaya - AI-Powered Financial Certification{% endblock %}</title>
+    <title>{% block title %}SEBI Vidyalaya - AI-Powered Tutor for SEBI Certifications{% endblock %}</title>
     
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -24,7 +24,7 @@
 </head>
 <body>
     <!-- Header -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-sebi-navy fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top" style="background: rgba(102, 126, 234, 0.95); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center" href="{{ url_for('landing') }}">
                 <i class="fas fa-graduation-cap me-2 text-sebi-gold"></i>
@@ -37,7 +37,7 @@
             
             <div class="collapse navbar-collapse" id="navbarNav">
                 <div class="navbar-nav ms-auto">
-                    {% if request.endpoint == 'chat' %}
+                    {% if page_type == 'chat' %}
                     <div class="nav-item dropdown me-3">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                             <i class="fas fa-globe me-1"></i>
@@ -47,8 +47,8 @@
                             <li><a class="dropdown-item" href="#" onclick="changeLanguage('en-US', 'English')">🇺🇸 English</a></li>
                             <li><a class="dropdown-item" href="#" onclick="changeLanguage('hi-IN', 'हिन्दी')">🇮🇳 हिन्दी</a></li>
                             <li><a class="dropdown-item" href="#" onclick="changeLanguage('bn-IN', 'বাংলা')">🇮🇳 বাংলা</a></li>
-                            <li><a class="dropdown-item" href="#" onclick="changeLanguage('ta-IN', 'தமிழ்')">🇮🇳 தமிழ்</a></li>
-                            <li><a class="dropdown-item" href="#" onclick="changeLanguage('te-IN', 'తెలుగు')">🇮🇳 తెలుగు</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="changeLanguage('mr-IN', 'मराठी')">🇮🇳 मराठी</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="changeLanguage('kn-IN', 'ಕನ್ನಡ')">🇮🇳 ಕನ್ನಡ</a></li>
                             <li><a class="dropdown-item" href="#" onclick="changeLanguage('gu-IN', 'ગુજરાતી')">🇮🇳 ગુજરાતી</a></li>
                         </ul>
                     </div>

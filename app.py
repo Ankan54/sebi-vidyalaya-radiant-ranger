@@ -1,49 +1,44 @@
 import os
 import logging
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_socketio import SocketIO
-from sqlalchemy.orm import DeclarativeBase
-from werkzeug.middleware.proxy_fix import ProxyFix
+import uvicorn
+from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
 
-class Base(DeclarativeBase):
-    pass
-
-db = SQLAlchemy(model_class=Base)
-socketio = SocketIO(cors_allowed_origins="*")
-
 # Create the app
-app = Flask(__name__)
-app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key-change-in-production")
-app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+app = FastAPI(title="SEBI Vidyalaya", version="1.0.0")
 
-# Configure the database
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///sebi_vidyalaya.db")
-app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-    "pool_recycle": 300,
-    "pool_pre_ping": True,
-}
+# Configure static files first
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Configure upload settings
-app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024  # 5MB max file size
-app.config['UPLOAD_FOLDER'] = 'uploads'
+# Configure templates with Flask-like functions
+def url_for(name: str, **params):
+    if name == "static":
+        return f"/static/{params.get('filename', '')}"
+    if name == "landing":
+        return "/"
+    return f"/{name}"
 
-# Initialize extensions
-db.init_app(app)
-socketio.init_app(app)
+def get_flashed_messages(with_categories=False):
+    # Mock Flask's flash messages for compatibility
+    return []
+
+templates = Jinja2Templates(directory="templates")
+templates.env.globals["url_for"] = url_for
+templates.env.globals["get_flashed_messages"] = get_flashed_messages
+
+# Configure upload settings  
+MAX_CONTENT_LENGTH = 5 * 1024 * 1024  # 5MB max file size
+UPLOAD_FOLDER = 'uploads'
 
 # Ensure upload directory exists
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-with app.app_context():
-    # Import models and routes
-    import models  # noqa: F401
-    import routes  # noqa: F401
-    
-    db.create_all()
+# Import routes to register them
+import routes
 
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', port=5000, debug=True, use_reloader=False, log_output=True)
+    uvicorn.run("app:app", host='0.0.0.0', port=8080, reload=True)
