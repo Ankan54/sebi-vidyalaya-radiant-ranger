@@ -248,7 +248,7 @@ def question_generator(prev_questions: list[Dict, str], exam_type: str, is_initi
     "question": "",
     "options": [
         {{"a": "option a text"}},
-        {{"b": "option b text"}},thi
+        {{"b": "option b text"}},
         {{"c": "option c text"}},
         {{"d": "option d text"}}
     ],
