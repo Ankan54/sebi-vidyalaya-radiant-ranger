@@ -2438,15 +2438,23 @@ function displayQuestion(questionData) {
     const optionsContainer = document.getElementById('questionOptions');
     optionsContainer.innerHTML = '';
     
-    Object.entries(questionData.options).forEach(([key, value]) => {
+    // Handle options array format: ["a: Option text", "b: Option text", ...]
+    questionData.options.forEach((optionString) => {
+        // Extract letter and text from "a: Option text" format
+        const colonIndex = optionString.indexOf(':');
+        if (colonIndex === -1) return; // Skip malformed options
+        
+        const optionLetter = optionString.substring(0, colonIndex).trim();
+        const optionText = optionString.substring(colonIndex + 1).trim();
+        
         const optionDiv = document.createElement('div');
         optionDiv.className = 'option-item';
-        optionDiv.onclick = () => selectOption(key, optionDiv);
-        optionDiv.setAttribute('data-option', key); // Add data attribute for debugging
+        optionDiv.onclick = () => selectOption(optionLetter, optionDiv);
+        optionDiv.setAttribute('data-option', optionLetter);
         
         optionDiv.innerHTML = `
-            <div class="option-letter">${key.toUpperCase()}</div>
-            <div class="option-text">${value}</div>
+            <div class="option-letter">${optionLetter.toUpperCase()}</div>
+            <div class="option-text">${optionText}</div>
         `;
         
         optionsContainer.appendChild(optionDiv);
@@ -2535,12 +2543,17 @@ function showAnswerFeedback(isCorrect, correctOption) {
     
     // Show correct answer if incorrect
     if (!isCorrect) {
-        const correctOptionText = mockExamData.currentQuestionData.options[correctOption];
-        console.log('Correct Answer Debug:', {
-            correctOption: correctOption,
-            correctOptionText: correctOptionText,
-            allOptions: mockExamData.currentQuestionData.options
-        });
+        // Find the correct option text from the array format
+        const correctOptionString = mockExamData.currentQuestionData.options.find(optionString => 
+            optionString.startsWith(correctOption + ':')
+        );
+        
+        let correctOptionText = '';
+        if (correctOptionString) {
+            const colonIndex = correctOptionString.indexOf(':');
+            correctOptionText = correctOptionString.substring(colonIndex + 1).trim();
+        }
+        
         correctAnswerDiv.innerHTML = `<strong>Correct Answer:</strong> ${correctOption.toUpperCase()}) ${correctOptionText || 'Option text not available'}`;
         correctAnswerDiv.style.display = 'block';
     } else {
