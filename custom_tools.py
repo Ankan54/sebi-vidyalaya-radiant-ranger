@@ -1,5 +1,5 @@
 from langchain_core.tools import tool
-from crewai_tools import BaseTool
+from crewai.tools import BaseTool
 import pandas as pd
 from datetime import datetime, timedelta
 import requests, re, json, traceback, chromadb
@@ -138,7 +138,7 @@ def search_knowledge_base(query: str):
         # Perform semantic search
         results = collection.query(
             query_embeddings=[query_embedding],  # Use embedding instead of text
-            n_results= 10
+            n_results= 5
         )
         return display_results(results)
         

@@ -71,3 +71,4 @@ coverage.xml
 # Temporary files
 *.tmp
 *.temp
+test_script.py

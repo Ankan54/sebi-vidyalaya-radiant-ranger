@@ -6,12 +6,12 @@ import pandas as pd
 from typing import Optional, Dict, Any, List, Union
 from custom_tools import get_web_search_result, calculator
 from agents import ai_tutor_tool
-from llm_models import llm
+from llm_models import azure_llm
 from configs import config
 
 
 tools = [get_web_search_result, ai_tutor_tool, calculator]
-llm_with_tools = llm.bind_tools(tools)
+llm_with_tools = azure_llm.bind_tools(tools)
 
 
 def convert_to_langchain_messages(messages_raw: List[Dict]) -> List[Union[SystemMessage, HumanMessage, AIMessage]]:
@@ -111,11 +111,12 @@ async def orchestrator_agent(messages):
                             await asyncio.sleep(0.01)
                             result = ai_tutor_tool.invoke(tool_call['args'])
                             tool_message = ToolMessage(
-                                content= result,
+                                content= str(result),
                                 tool_call_id=tool_call['id'],
                                 name=tool_name
                             )
                             chat_history.append(tool_message)
+                            # print("after_tool_chat_history", str(chat_history))
                         elif tool_name == 'calculator':
                             # Yield tool usage notification
                             tool_data = {
@@ -129,7 +130,7 @@ async def orchestrator_agent(messages):
                             tool_message = ToolMessage(
                                 content=result,
                                 tool_call_id=tool_call['id'],
-                                # name=tool_name
+                                name=tool_name
                             )
                             chat_history.append(tool_message)
                     
@@ -143,7 +144,6 @@ async def orchestrator_agent(messages):
                 # Send newline before final response
                 yield f"data: {json.dumps({'type': 'newline', 'content': '\\n'})}\n\n"
                 yield f"data: {json.dumps({'type': 'newline', 'content': 'Generating Final Response'})}\n\n"
-                # print("after tool chat history", str(chat_history))
                 # Stream the final response after tool execution
                 for chunk in llm_with_tools.stream(chat_history):
                     if chunk.content:
@@ -245,6 +245,6 @@ def question_generator(prev_questions: list[Dict, str], exam_type: str, is_initi
 
         QUESTION
         """
-    question = llm.invoke(prompt)
+    question = azure_llm.invoke(prompt)
         
     return question.content
