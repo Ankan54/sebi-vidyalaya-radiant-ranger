@@ -3,8 +3,8 @@ from fastapi import HTTPException, Request, Form, UploadFile, File
 from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 from app import app, templates
 from speech_service import SpeechService
-from orchestrator import orchestrator_agent
-import logging
+from orchestrator import orchestrator_agent, question_generator
+import logging, json
 from configs import config
 
 
@@ -117,4 +117,33 @@ async def send_message(request: Request):
         
     except Exception as e:
         logger.error(f"Message handling error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/mock_exam")
+async def mock_exam(request: Request):
+    """Handle mock exam requests and return next question"""
+    try:
+        # Get JSON data from request body
+        data = await request.json()
+        
+        messages = data.get('messages', [])
+        is_initial = data.get('is_initial', False)
+        exam_type = data.get('exam_type', '')
+        
+        if not isinstance(messages, list):
+            raise HTTPException(status_code=400, detail="Messages must be a list")
+        
+        if not isinstance(is_initial, bool):
+            raise HTTPException(status_code=400, detail="is_initial must be a boolean")
+            
+        if not exam_type or exam_type not in EXAM_TYPES:
+            raise HTTPException(status_code=400, detail="Valid exam_type is required")
+        
+        question = question_generator(messages, exam_type, is_initial)
+
+        return JSONResponse(json.loads(question))
+        
+    except Exception as e:
+        logger.error(f"Mock exam error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

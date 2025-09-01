@@ -42,6 +42,46 @@ body {
     overflow: hidden;
 }
 
+.tab-navigation {
+    display: flex;
+    gap: 0.5rem;
+    position: relative;
+    z-index: 2;
+}
+
+.tab-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 2rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    backdrop-filter: blur(10px);
+}
+
+.tab-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.tab-btn.active {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transform: translateY(-1px);
+}
+
+.tab-btn i {
+    font-size: 1rem;
+}
+
 .chat-header::before {
     content: '';
     position: absolute;
@@ -536,6 +576,301 @@ body {
     background: #a0aec0;
 }
 
+.tab-content {
+    display: none;
+    height: calc(100vh - 180px);
+    flex-direction: column;
+    margin-top: 1rem;
+}
+
+.tab-content.active {
+    display: flex;
+}
+
+.mock-exam-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: #fafafa;
+}
+
+.exam-welcome {
+    max-width: 500px;
+    width: 100%;
+}
+
+.welcome-card {
+    background: white;
+    border-radius: 1.5rem;
+    padding: 3rem 2rem;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.exam-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 2rem;
+    color: white;
+    box-shadow: 0 8px 30px rgba(102, 126, 234, 0.3);
+}
+
+.exam-features {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 2rem 0;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: #f8fafc;
+    border-radius: 0.75rem;
+    border: 1px solid #e2e8f0;
+}
+
+.feature-item i {
+    font-size: 1.1rem;
+    width: 20px;
+    text-align: center;
+}
+
+.start-exam-btn {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 2rem;
+    font-weight: 600;
+    box-shadow: 0 8px 30px rgba(102, 126, 234, 0.3);
+    transition: all 0.3s ease;
+}
+
+.start-exam-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(102, 126, 234, 0.4);
+    background: linear-gradient(135deg, #5a6fd8, #6a4190);
+}
+
+.exam-stats {
+    display: flex;
+    justify-content: space-around;
+    padding-top: 2rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #667eea;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Mock Exam Question Interface */
+.exam-question-interface {
+    flex: 1;
+    display: flex;
+    padding: 2rem;
+    background: #fafafa;
+}
+
+.question-container {
+    max-width: 800px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.question-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background: white;
+    border-radius: 1rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.question-progress {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #667eea;
+}
+
+.question-topic {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.question-card {
+    background: white;
+    border-radius: 1.5rem;
+    padding: 2.5rem;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+}
+
+.question-text {
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: #2d3748;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+}
+
+.question-options {
+    display: grid;
+    gap: 1rem;
+}
+
+.option-item {
+    padding: 1rem 1.5rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: white;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.option-item:hover {
+    border-color: #667eea;
+    background: #f8fafc;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+}
+
+.option-item.selected {
+    border-color: #667eea;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+}
+
+.option-item.correct {
+    border-color: #10b981;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1));
+}
+
+.option-item.incorrect {
+    border-color: #ef4444;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.1));
+}
+
+.option-letter {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #64748b;
+    flex-shrink: 0;
+}
+
+.option-item.selected .option-letter {
+    background: #667eea;
+    color: white;
+}
+
+.option-item.correct .option-letter {
+    background: #10b981;
+    color: white;
+}
+
+.option-item.incorrect .option-letter {
+    background: #ef4444;
+    color: white;
+}
+
+.option-text {
+    flex: 1;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.question-feedback {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 2px solid #e2e8f0;
+}
+
+.feedback-result {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.feedback-result.correct {
+    color: #10b981;
+}
+
+.feedback-result.incorrect {
+    color: #ef4444;
+}
+
+.correct-answer {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: #f0f9f4;
+    border-left: 4px solid #10b981;
+    border-radius: 0.5rem;
+    font-weight: 500;
+}
+
+.show-explanation-btn {
+    margin-bottom: 1rem;
+}
+
+.explanation-content {
+    padding: 1.5rem;
+    background: #f8fafc;
+    border-radius: 1rem;
+    border: 1px solid #e2e8f0;
+    margin-top: 1rem;
+}
+
+.question-navigation {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.question-navigation .btn {
+    min-width: 120px;
+}
+
 /* Mobile responsive */
 @media (max-width: 768px) {
     .chat-container {
@@ -545,6 +880,19 @@ body {
     
     .message-content {
         max-width: 85%;
+    }
+    
+    .exam-features {
+        grid-template-columns: 1fr;
+    }
+    
+    .welcome-card {
+        padding: 2rem 1.5rem;
+    }
+    
+    .tab-btn {
+        font-size: 0.8rem;
+        padding: 0.5rem 1rem;
     }
     
     .chat-header {
@@ -561,26 +909,34 @@ body {
 {% block content %}
 <div class="container-fluid h-100 p-0">
     <div class="chat-container">
-        <!-- Modern Chat Header -->
+        <!-- Modern Chat Header with Tabs -->
         <div class="chat-header">
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="mb-3">
                 <div>
                     <h1 class="chat-title">
-                        <i class="fas fa-robot"></i>
-                        SEBI AI Tutor
+                        <i class="fas fa-graduation-cap"></i>
+                        SEBI Vidyalaya
                     </h1>
                     <p class="chat-subtitle">{{ exam_title }} • Instant Doubt Resolution • Adaptive Learning</p>
                 </div>
-                <div class="d-flex gap-2">
-                    <a href="{{ url_for('landing') }}" class="btn btn-outline-light btn-sm">
-                        <i class="fas fa-home me-1"></i> Home
-                    </a>
-                </div>
+            </div>
+            
+            <!-- Tab Navigation -->
+            <div class="tab-navigation">
+                <button class="tab-btn active" id="aiTutorTab" onclick="switchTab('aiTutor')">
+                    <i class="fas fa-robot"></i>
+                    AI Tutor
+                </button>
+                <button class="tab-btn" id="mockExamTab" onclick="switchTab('mockExam')">
+                    <i class="fas fa-clipboard-list"></i>
+                    Mock Exam
+                </button>
             </div>
         </div>
 
-        <!-- Chat Messages -->
-        <div class="chat-messages" id="chatMessages">
+        <!-- AI Tutor Content -->
+        <div class="tab-content active" id="aiTutorContent">
+            <div class="chat-messages" id="chatMessages">
             <!-- Welcome Message -->
             <div class="message message-ai">
                 <div class="message-avatar">
@@ -678,8 +1034,8 @@ body {
             </div>
         </div>
 
-        <!-- Modern Input Area -->
-        <div class="chat-input-container">
+            <!-- Modern Input Area -->
+            <div class="chat-input-container">
             <!-- Status Indicators -->
             <div id="voiceStatus" class="status-indicator d-none">
                 <i class="fas fa-microphone fa-pulse"></i>
@@ -726,6 +1082,121 @@ body {
                 <button class="btn btn-sm btn-outline-secondary" onclick="readAloud()">
                     <i class="fas fa-volume-up me-1"></i> Read Aloud
                 </button>
+            </div>
+            </div>
+        </div>
+        
+        <!-- Mock Exam Content -->
+        <div class="tab-content" id="mockExamContent">
+            <div class="mock-exam-container">
+                <!-- Welcome Screen -->
+                <div class="exam-welcome" id="examWelcome">
+                    <div class="welcome-card">
+                        <div class="text-center mb-4">
+                            <div class="exam-icon">
+                                <i class="fas fa-clipboard-list"></i>
+                            </div>
+                            <h3>Mock Exam Practice</h3>
+                            <p class="text-muted">Test your knowledge with practice questions</p>
+                        </div>
+                        
+                        <div class="exam-features mb-4">
+                            <div class="feature-item">
+                                <i class="fas fa-clock text-info"></i>
+                                <span>Adaptive Questions</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="fas fa-check-circle text-success"></i>
+                                <span>Instant Feedback</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="fas fa-book text-warning"></i>
+                                <span>Detailed Explanations</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="fas fa-chart-line text-primary"></i>
+                                <span>Progress Tracking</span>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <button class="btn btn-primary btn-lg start-exam-btn" onclick="startMockExam()">
+                                <i class="fas fa-play me-2"></i>
+                                Start Mock Exam
+                            </button>
+                        </div>
+                        
+                        <div class="exam-stats mt-4">
+                            <div class="stat-item">
+                                <span class="stat-value" id="totalQuestions">20</span>
+                                <span class="stat-label">Questions</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value" id="completedExams">0</span>
+                                <span class="stat-label">Completed</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value" id="bestScore">--</span>
+                                <span class="stat-label">Best Score</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Question Interface -->
+                <div class="exam-question-interface" id="examQuestionInterface" style="display: none;">
+                    <div class="question-container">
+                        <div class="question-header">
+                            <div class="question-progress">
+                                <span id="questionNumber">1</span> of <span id="totalQuestionsDisplay">20</span>
+                            </div>
+                            <div class="question-topic">
+                                <span id="questionTopic">Loading...</span>
+                            </div>
+                        </div>
+                        
+                        <div class="question-card">
+                            <div class="question-text" id="questionText">
+                                Loading question...
+                            </div>
+                            
+                            <div class="question-options" id="questionOptions">
+                                <!-- Options will be populated dynamically -->
+                            </div>
+                            
+                            <!-- Feedback Section (hidden initially) -->
+                            <div class="question-feedback" id="questionFeedback" style="display: none;">
+                                <div class="feedback-result" id="feedbackResult">
+                                    <!-- Correct/Incorrect message -->
+                                </div>
+                                <div class="correct-answer" id="correctAnswer">
+                                    <!-- Correct answer display -->
+                                </div>
+                                <button class="btn btn-outline-info show-explanation-btn" id="showExplanationBtn" onclick="showExplanation()">
+                                    <i class="fas fa-book me-1"></i>
+                                    Show Explanation
+                                </button>
+                                <div class="explanation-content" id="explanationContent" style="display: none;">
+                                    <!-- Explanation will be streamed here -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="question-navigation">
+                            <button class="btn btn-outline-secondary" id="prevBtn" onclick="previousQuestion()" disabled>
+                                <i class="fas fa-chevron-left me-1"></i>
+                                Previous
+                            </button>
+                            <button class="btn btn-primary" id="submitBtn" onclick="submitAnswer()" disabled>
+                                Submit Answer
+                            </button>
+                            <button class="btn btn-outline-secondary" id="nextBtn" onclick="nextQuestion()" disabled>
+                                Next
+                                <i class="fas fa-chevron-right ms-1"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -774,6 +1245,18 @@ let mediaRecorder = null;
 let audioStream = null;
 let audioChunks = [];
 let chatHistory = [];
+let currentTab = 'aiTutor';
+let mockExamData = {
+    questions: [],
+    currentQuestion: 0,
+    answers: [],
+    messages: [],
+    startTime: null,
+    endTime: null,
+    isExamActive: false,
+    currentQuestionData: null,
+    selectedAnswer: null
+};
 
 // Initialize when page loads
 document.addEventListener('DOMContentLoaded', function() {
@@ -1686,16 +2169,340 @@ function hideVoiceStatus() {
     document.getElementById('transcriptionPreview').textContent = '';
 }
 
+// Tab switching functionality
+function switchTab(tabName) {
+    // Update tab buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(tabName + 'Tab').classList.add('active');
+    
+    // Update tab content
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+    document.getElementById(tabName + 'Content').classList.add('active');
+    
+    currentTab = tabName;
+    
+    // Load exam stats if switching to mock exam
+    if (tabName === 'mockExam') {
+        loadExamStats();
+    }
+}
+
+// Mock exam functionality
+async function startMockExam() {
+    try {
+        // Hide welcome screen and show question interface
+        document.getElementById('examWelcome').style.display = 'none';
+        document.getElementById('examQuestionInterface').style.display = 'flex';
+        
+        // Initialize exam data
+        mockExamData = {
+            questions: [],
+            currentQuestion: 1,
+            answers: [],
+            messages: [],
+            startTime: new Date(),
+            endTime: null,
+            isExamActive: true,
+            currentQuestionData: null,
+            selectedAnswer: null
+        };
+        
+        // Load first question
+        await loadNextQuestion(true);
+        
+    } catch (error) {
+        console.error('Error starting mock exam:', error);
+        alert('Failed to start exam. Please try again.');
+    }
+}
+
+async function loadNextQuestion(isInitial = false) {
+    try {
+        // Show loading state if not already shown
+        if (!isInitial) {
+            // Loading already shown by nextQuestion(), but show for initial load
+        } else {
+            showQuestionLoading();
+        }
+        
+        const response = await fetch('/mock_exam', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                messages: mockExamData.messages,
+                is_initial: isInitial,
+                exam_type: examType
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const questionData = await response.json();
+        
+        // Store current question data
+        mockExamData.currentQuestionData = questionData;
+        mockExamData.selectedAnswer = null;
+        
+        // Display the question (this will clear loading state)
+        displayQuestion(questionData);
+        
+    } catch (error) {
+        console.error('Error loading question:', error);
+        alert('Failed to load question. Please try again.');
+        
+        // Reset loading state on error
+        document.getElementById('questionText').textContent = 'Failed to load question. Please try again.';
+        document.getElementById('questionOptions').innerHTML = '<div class="text-center text-danger">Error loading question</div>';
+        document.getElementById('questionTopic').textContent = 'Error';
+    }
+}
+
+function displayQuestion(questionData) {
+    // Update question number and topic
+    document.getElementById('questionNumber').textContent = mockExamData.currentQuestion;
+    document.getElementById('questionTopic').textContent = questionData.topic_name || 'General';
+    
+    // Display question text
+    document.getElementById('questionText').textContent = questionData.question;
+    
+    // Create options
+    const optionsContainer = document.getElementById('questionOptions');
+    optionsContainer.innerHTML = '';
+    
+    Object.entries(questionData.options).forEach(([key, value]) => {
+        const optionDiv = document.createElement('div');
+        optionDiv.className = 'option-item';
+        optionDiv.onclick = () => selectOption(key, optionDiv);
+        optionDiv.setAttribute('data-option', key); // Add data attribute for debugging
+        
+        optionDiv.innerHTML = `
+            <div class="option-letter">${key.toUpperCase()}</div>
+            <div class="option-text">${value}</div>
+        `;
+        
+        optionsContainer.appendChild(optionDiv);
+    });
+    
+    // Reset feedback section
+    document.getElementById('questionFeedback').style.display = 'none';
+    document.getElementById('explanationContent').style.display = 'none';
+    
+    // Update navigation buttons
+    updateNavigationButtons();
+}
+
+function selectOption(optionKey, optionElement) {
+    // Ensure we store the option key as string (a, b, c, d)
+    const selectedKey = String(optionKey).toLowerCase();
+    
+    // Remove previous selection
+    document.querySelectorAll('.option-item').forEach(item => {
+        item.classList.remove('selected');
+    });
+    
+    // Select current option
+    optionElement.classList.add('selected');
+    mockExamData.selectedAnswer = selectedKey;
+    
+    console.log('Selected Answer:', selectedKey, 'Type:', typeof selectedKey);
+    
+    // Enable submit button
+    document.getElementById('submitBtn').disabled = false;
+}
+
+function submitAnswer() {
+    if (!mockExamData.selectedAnswer || !mockExamData.currentQuestionData) {
+        return;
+    }
+    
+    const correctOption = String(mockExamData.currentQuestionData.correct_option).toLowerCase();
+    const userAnswer = String(mockExamData.selectedAnswer).toLowerCase();
+    const isCorrect = userAnswer === correctOption;
+    
+    // Debug logging
+    console.log('Submit Answer Debug:', {
+        userAnswer: userAnswer,
+        userAnswerType: typeof userAnswer,
+        correctOption: correctOption,
+        correctOptionType: typeof correctOption,
+        isCorrect: isCorrect
+    });
+    
+    // Store the answer
+    const answerData = {
+        content: JSON.stringify({
+            ...mockExamData.currentQuestionData,
+            user_selected_option: userAnswer,
+            is_correct: isCorrect,
+            answered_at: new Date().toISOString()
+        }),
+        role: 'user'
+    };
+    
+    mockExamData.messages.push(answerData);
+    
+    // Show visual feedback
+    showAnswerFeedback(isCorrect, correctOption);
+    
+    // Update navigation
+    document.getElementById('submitBtn').disabled = true;
+    document.getElementById('nextBtn').disabled = false;
+}
+
+function showAnswerFeedback(isCorrect, correctOption) {
+    const feedbackDiv = document.getElementById('questionFeedback');
+    const resultDiv = document.getElementById('feedbackResult');
+    const correctAnswerDiv = document.getElementById('correctAnswer');
+    
+    // Show feedback section
+    feedbackDiv.style.display = 'block';
+    
+    // Update result message
+    resultDiv.className = `feedback-result ${isCorrect ? 'correct' : 'incorrect'}`;
+    resultDiv.innerHTML = `
+        <i class="fas fa-${isCorrect ? 'check-circle' : 'times-circle'}"></i>
+        ${isCorrect ? 'Correct!' : 'Incorrect'}
+    `;
+    
+    // Show correct answer if incorrect
+    if (!isCorrect) {
+        const correctOptionText = mockExamData.currentQuestionData.options[correctOption];
+        console.log('Correct Answer Debug:', {
+            correctOption: correctOption,
+            correctOptionText: correctOptionText,
+            allOptions: mockExamData.currentQuestionData.options
+        });
+        correctAnswerDiv.innerHTML = `<strong>Correct Answer:</strong> ${correctOption.toUpperCase()}) ${correctOptionText || 'Option text not available'}`;
+        correctAnswerDiv.style.display = 'block';
+    } else {
+        correctAnswerDiv.style.display = 'none';
+    }
+    
+    // Update option visual feedback
+    document.querySelectorAll('.option-item').forEach(item => {
+        const optionLetter = item.querySelector('.option-letter').textContent.toLowerCase();
+        
+        if (optionLetter === correctOption) {
+            item.classList.add('correct');
+        } else if (optionLetter === mockExamData.selectedAnswer && !isCorrect) {
+            item.classList.add('incorrect');
+        }
+        
+        // Disable clicking
+        item.onclick = null;
+        item.style.cursor = 'default';
+    });
+}
+
+async function showExplanation() {
+    const explanationContent = document.getElementById('explanationContent');
+    const showBtn = document.getElementById('showExplanationBtn');
+    
+    if (explanationContent.style.display === 'none') {
+        explanationContent.style.display = 'block';
+        explanationContent.innerHTML = '<div class="text-muted">Generating explanation...</div>';
+        showBtn.innerHTML = '<i class="fas fa-eye-slash me-1"></i> Hide Explanation';
+        
+        // TODO: Stream explanation from AI
+        setTimeout(() => {
+            explanationContent.innerHTML = `
+                <h6>Explanation:</h6>
+                <p>This question tests your understanding of ${mockExamData.currentQuestionData.topic_name}. 
+                The correct answer is ${mockExamData.currentQuestionData.correct_option.toUpperCase()}) 
+                ${mockExamData.currentQuestionData.options[mockExamData.currentQuestionData.correct_option]}.</p>
+                <p><em>Detailed explanation will be generated by AI in the next phase.</em></p>
+            `;
+        }, 1000);
+    } else {
+        explanationContent.style.display = 'none';
+        showBtn.innerHTML = '<i class="fas fa-book me-1"></i> Show Explanation';
+    }
+}
+
+function previousQuestion() {
+    // TODO: Implement navigation to previous questions
+    alert('Previous question navigation will be implemented in the next phase!');
+}
+
+async function nextQuestion() {
+    // Show loading state
+    showQuestionLoading();
+    
+    mockExamData.currentQuestion++;
+    mockExamData.selectedAnswer = null;
+    
+    // Load next question
+    await loadNextQuestion(false);
+}
+
+function showQuestionLoading() {
+    // Update question text to show loading
+    document.getElementById('questionText').innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Loading next question...';
+    
+    // Clear options
+    document.getElementById('questionOptions').innerHTML = `
+        <div class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <div class="mt-2 text-muted">Preparing your next question...</div>
+        </div>
+    `;
+    
+    // Update topic to loading
+    document.getElementById('questionTopic').innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Loading...';
+    
+    // Disable all buttons
+    document.getElementById('prevBtn').disabled = true;
+    document.getElementById('submitBtn').disabled = true;
+    document.getElementById('nextBtn').disabled = true;
+    
+    // Hide feedback
+    document.getElementById('questionFeedback').style.display = 'none';
+}
+
+function updateNavigationButtons() {
+    const prevBtn = document.getElementById('prevBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    
+    // Previous button (enable if not first question)
+    prevBtn.disabled = mockExamData.currentQuestion <= 1;
+    
+    // Submit button (disable until option selected)
+    submitBtn.disabled = !mockExamData.selectedAnswer;
+    
+    // Next button (disable until answer submitted)
+    nextBtn.disabled = true;
+}
+
+function loadExamStats() {
+    // Load stats from localStorage
+    const stats = JSON.parse(localStorage.getItem('examStats_' + examType) || '{}');
+    
+    document.getElementById('completedExams').textContent = stats.completed || 0;
+    document.getElementById('bestScore').textContent = stats.bestScore ? stats.bestScore + '%' : '--';
+}
+
 // Auto-resize textarea
 document.addEventListener('DOMContentLoaded', function() {
     const textarea = document.getElementById('messageInput');
     
-    textarea.addEventListener('input', function() {
-        this.style.height = 'auto';
-        const maxHeight = 120;
-        const newHeight = Math.min(this.scrollHeight, maxHeight);
-        this.style.height = newHeight + 'px';
-    });
+    if (textarea) {
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            const maxHeight = 120;
+            const newHeight = Math.min(this.scrollHeight, maxHeight);
+            this.style.height = newHeight + 'px';
+        });
+    }
+    
+    // Initialize exam stats
+    loadExamStats();
 });
 </script>
 {% endblock %}

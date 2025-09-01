@@ -49,8 +49,6 @@ Thumbs.db
 
 # Project specific
 .local/
-data/
-static/files/
 creds.json
 CLAUDE.md
 

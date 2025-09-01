@@ -85,10 +85,10 @@ ai_tutor_crew = Crew(
 
 exam_details_dict = {"mf_foundation": 
                         {"exam_name": "NISM-Series-V-B: Mutual Fund Foundation Certification",
-                        "file_path": r"/home/radiant_ranger_gcphackathon/sebi_vidyalaya/data/Mutual Fund Foundation Certification Examination.txt"},
+                        "file_path": r"./data/Mutual Fund Foundation Certification Examination.txt"},
                     "investor_awareness":
                         {"exam_name": "SEBI Investor Awareness Certification",
-                        "file_path": r"/home/radiant_ranger_gcphackathon/sebi_vidyalaya/data/sebi_investor_awareness_exam_overview.txt"},
+                        "file_path": r"./data/sebi_investor_awareness_exam_overview.txt"},
                     "invest_advisor":
                         {"exam_name": "NISM-Series-X-A: Investment Adviser (Level 1) Certification",
                         "file_path": r"/home/radiant_ranger_gcphackathon/sebi_vidyalaya/data/Investment Adviser (Level 1).txt"},

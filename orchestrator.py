@@ -60,7 +60,7 @@ async def orchestrator_agent(messages):
     chat_history = [{"role": "system",
                     "content": f"""You are an experienced AI Tutor helping Users prepare for their SEBI Certification Exams.\
                         Always repond in {config.user_language} Language irrespective of the language of the user query.\
-                            Maintain a postive tone always."""}] + chat_history
+                            Maintain a postive tone always. follow all information and instructions received from tools"""}] + chat_history
     chat_history = convert_to_langchain_messages(chat_history)
     chunks = []
     try:
@@ -110,7 +110,7 @@ async def orchestrator_agent(messages):
                             await asyncio.sleep(0.01)
                             result = ai_tutor_tool.invoke(tool_call['args'])
                             tool_message = ToolMessage(
-                                content= "Strictly Adhere to the information and all the Instructions given below: \n" + result,
+                                content= result,
                                 tool_call_id=tool_call['id'],
                                 name=tool_name
                             )
@@ -142,7 +142,7 @@ async def orchestrator_agent(messages):
                 # Send newline before final response
                 yield f"data: {json.dumps({'type': 'newline', 'content': '\\n'})}\n\n"
                 yield f"data: {json.dumps({'type': 'newline', 'content': 'Generating Final Response'})}\n\n"
-                
+                # print("after tool chat history", str(chat_history))
                 # Stream the final response after tool execution
                 for chunk in llm_with_tools.stream(chat_history):
                     if chunk.content:
@@ -172,3 +172,64 @@ async def orchestrator_agent(messages):
     
     # Send completion signal
     yield "data: [DONE]\n\n"
+
+exam_questions_dict = {"mf_foundation": 
+                        {"exam_name": "NISM-Series-V-B: Mutual Fund Foundation Certification",
+                        "file_path": r"./data/mf_foundation_test_questions.json"},
+                    "investor_awareness":
+                        {"exam_name": "SEBI Investor Awareness Certification",
+                        "file_path": r"./data/investor_awareness_test_questions.json"},
+                    "invest_advisor":
+                        {"exam_name": "NISM-Series-X-A: Investment Adviser (Level 1) Certification",
+                        "file_path": r"./data/invest_advisor_test_questions.json"},
+                    }
+
+def question_generator(prev_questions: list[Dict, str], exam_type: str, is_initial: bool = False) -> str:
+    """
+    Generate next question based on previous questions and exam type
+    
+    Args:
+        prev_questions: List of previous question dictionaries with user responses
+        exam_type: Type of exam (investor_awareness, mf_foundation, invest_advisor)
+        is_initial: Whether this is the first question request
+    """
+    # Convert messages list to text string
+    messages_text = ""
+    
+    if prev_questions:
+        for i, question_data in enumerate(prev_questions):
+            messages_text += f"Question {i + 1}:\n"
+            messages_text += f"{json.dumps(question_data, indent=2)}\n"
+            messages_text += "-" * 50 + "\n"
+    
+    exam_details = exam_questions_dict[exam_type]
+    sample_questions = ""
+    with open(exam_details["file_path"], 'r', encoding='utf-8') as file:
+            json_list = json.load(file)
+            for i, obj in enumerate(json_list, 1):
+                sample_questions += f"Question {i}: {json.dumps(obj, ensure_ascii=False)}" + "\n"
+
+    prompt = f"""You are an experienced Examiner who makes the questions for various certification exams conducted by SEBI.\
+        You will be given some questions for an exam, you will select the questions from them based on the adaptability of the examinee,\
+        that is, if the examinee is able to answer questions about any Topic then you ask another question from the same topic with increased difficulty,\
+        it examinee is able to answer that question as well, then you will move to another topic. You will be given what are the previous questions \
+        attempted by the examinee and whether they answered it correctly or not. Based on that information you will gradually increase the difficulty level \
+            and make sure all the topics are getting covered.
+
+        EXAM NAME: {exam_details['exam_name']}
+
+        SAMPLE QUESTIONS: 
+        {sample_questions}
+
+        PREVIOUSLY ASKED QUESTIONS and RESULTS:
+        {"This is the first question, so no previous questions are available" if is_initial else messages_text}
+        
+        You will only select a new question from the given sample questions. you will never repeat same questions asked previously.
+
+        the output will be json format exactly as given in SAMPLE questions for each question.
+
+        QUESTION
+        """
+    question = llm.invoke(prompt)
+        
+    return question.content
