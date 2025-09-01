@@ -4,23 +4,20 @@ Interactive chat interface for SEBI certification exam preparation with speech-t
 
 ## How to Run
 
-### Prerequisites
-- Python 3.8+
+### Using Docker (Recommended)
+
+#### Prerequisites
+- Docker
 - Google Cloud credentials JSON file
 - Azure OpenAI access
 
-### Step 1: Clone and Navigate
+#### Step 1: Clone and Navigate
 ```bash
 git clone <repository-url>
 cd sebi_vidyalaya
 ```
 
-### Step 2: Install Dependencies
-```bash
-uv sync
-```
-
-### Step 3: Configure Environment
+#### Step 2: Configure Environment
 1. Copy the example environment file:
    ```bash
    cp .env.example .env
@@ -34,19 +31,35 @@ uv sync
    - `DEPLOYMENT_NAME`: Your Azure OpenAI deployment name
    - `SERPER_API_KEY`: Your Serper API key (for web search)
 
-### Step 4: Place Google Cloud Credentials
-Place your Google Cloud service account JSON file in the path specified in your `.env` file.
+#### Step 3: Place Google Cloud Credentials
+Place your Google Cloud service account JSON file in the project directory.
 
-### Step 5: Run the Application
+#### Step 4: Build and Run with Docker
 ```bash
-python app.py
+# Build the Docker image
+docker build -t sebi-vidyalaya .
+
+# Run the container
+docker run -p 8080:8080 sebi-vidyalaya
 ```
 
-The application will start on `http://localhost:8080`
+The application will be available at `http://localhost:8080`
 
-### Production Deployment
+### Local Development Setup
+
+#### Prerequisites
+- Python 3.11+
+- Google Cloud credentials JSON file
+- Azure OpenAI access
+
+#### Step 1: Install Dependencies
 ```bash
-uvicorn app:app --host 0.0.0.0 --port 8080
+uv sync
+```
+
+#### Step 2: Run the Application
+```bash
+python app.py
 ```
 
 ## Features

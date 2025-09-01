@@ -1,13 +1,15 @@
 from langchain_core.messages import HumanMessage, AIMessage, ToolMessage, SystemMessage
 from langchain_core.tools import tool
 import requests
-import json, asyncio
+import json, asyncio, time
 import pandas as pd
 from typing import Optional, Dict, Any, List, Union
 from custom_tools import get_web_search_result, calculator
-from agents import ai_tutor_tool
+from agents import ai_tutor_tool, exam_guide_crew
 from llm_models import azure_llm
 from configs import config
+from crewai.utilities.events.llm_events import LLMStreamChunkEvent
+from crewai.utilities.events.base_event_listener import BaseEventListener
 
 
 tools = [get_web_search_result, ai_tutor_tool, calculator]
@@ -241,10 +243,51 @@ def question_generator(prev_questions: list[Dict, str], exam_type: str, is_initi
         
         You will only select a new question from the given sample questions. you will never repeat same questions asked previously.
 
-        the output will be json format exactly as given in SAMPLE questions for each question.
+        the output will be json format following this example format:
+       {{
+    "question": "",
+    "options": [
+        {{"a": "option a text"}},
+        {{"b": "option b text"}},thi
+        {{"c": "option c text"}},
+        {{"d": "option d text"}}
+    ],
+    "correct_option": "b",
+    "topic_name": "topic name",
+    "difficulty": ""
+    }}
 
-        QUESTION
+        QUESTION:
         """
     question = azure_llm.invoke(prompt)
         
     return question.content
+
+
+async def explain_question_stream(question: str):
+    config.kb_results = []
+
+    final_reponse = exam_guide_crew.kickoff(inputs={"question_details": question, "user_language": config.user_language})
+    
+    res_chunk = {
+        "type": "final_content",
+        "content": str(final_reponse)
+    }
+    yield f"data: {json.dumps(res_chunk)}\n\n"
+    await asyncio.sleep(0.01)
+    
+    if config.kb_results:
+        # Remove page_content from each source, keeping only metadata
+        sources = []
+        for obj in config.kb_results:
+            obj.pop('page_content', None)  # Remove page_content
+            sources.append(obj)  # Keep document_name and page_number
+        
+        source_data = {
+            "type": "source",
+            "content": sources
+        }
+        yield f"data: {json.dumps(source_data)}\n\n"
+        await asyncio.sleep(0.01)
+
+    yield "data: [DONE]\n\n"
