@@ -6,7 +6,9 @@ from custom_tools import WebSearchTool, StudyMaterialSearchTool, CalculatorTool,
 from llm_models import llm
 from langchain_core.tools import tool
 from configs import config
-
+import os
+os.environ['CREWAI_DISABLE_TELEMETRY'] = 'true'
+os.environ['OTEL_SDK_DISABLED'] = 'true'
 
 financial_tutor_agent  = Agent(
     role="Smart AI Tutor for SEBI Certification Exams",
@@ -107,6 +109,7 @@ def ai_tutor_tool(user_query: str):
     Returns:
         The infromation required to Answer the question in Text format.
     """
+    config.kb_results = {}
     if not config.exam_name:
         config.exam_name = "invest_advisor"
     if not config.user_language:

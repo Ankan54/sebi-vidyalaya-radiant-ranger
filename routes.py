@@ -147,3 +147,72 @@ async def mock_exam(request: Request):
     except Exception as e:
         logger.error(f"Mock exam error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/generate_explanation")
+async def generate_explanation(request: Request):
+    """Generate explanation for exam answers with streaming response"""
+    try:
+        # Get JSON data from request body
+        data = await request.json()
+        
+        message = data.get('message', {})
+        language_code = data.get('language', 'en-US')
+        exam_type = data.get('exam_type', '')
+        
+        if not message or not isinstance(message, dict):
+            raise HTTPException(status_code=400, detail="Message is required and must be an object")
+            
+        if exam_type not in EXAM_TYPES:
+            raise HTTPException(status_code=400, detail="Valid exam_type is required")
+        
+        # Set configuration for the explanation generation
+        config.exam_name = exam_type
+        config.user_language = LANGUAGE_MAPPING.get(language_code, 'English')
+        
+        # Add system prompt to the user message content
+        system_prompt = f"""You are an expert SEBI certification exam tutor providing detailed explanations for exam answers.
+
+Always respond in {config.user_language} language.
+
+Your task is to:
+1. Analyze the question and the user's response as given below.
+2. Explain whether the answer is correct or incorrect and why
+3. Provide comprehensive educational context about the topic
+4. Give practical examples when relevant following the Indian Cultural Context as per the user's language.
+5. Suggest study tips for similar questions.
+
+Be thorough, educational, and encouraging in your explanations.
+
+---
+
+"""
+        
+        # Modify the message content to include the system prompt
+        if isinstance(message.get('content'), str):
+            message['content'] = system_prompt + message['content']
+        elif isinstance(message.get('content'), list):
+            # For multimodal content, prepend to first text block or add new text block
+            content_list = message['content'].copy()
+            if content_list and content_list[0].get('type') == 'text':
+                content_list[0]['text'] = system_prompt + content_list[0]['text']
+            else:
+                content_list.insert(0, {"type": "text", "text": system_prompt})
+            message['content'] = content_list
+        
+        explanation_messages = [message]
+        
+        # Stream response using the same orchestrator pattern
+        return StreamingResponse(
+            orchestrator_agent(explanation_messages),
+            media_type="text/plain",
+            headers={
+                "Cache-Control": "no-cache",
+                "Connection": "keep-alive",
+                "Content-Type": "text/event-stream"
+            }
+        )
+        
+    except Exception as e:
+        logger.error(f"Explanation generation error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))

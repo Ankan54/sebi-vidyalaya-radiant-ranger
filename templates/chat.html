@@ -558,6 +558,97 @@ body {
     }
 }
 
+/* Source links styling */
+.source-links-container {
+    margin-top: 1rem;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    border-radius: 1rem;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    overflow: hidden;
+}
+
+.source-links-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.source-links-header:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.source-links-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: #4a5568;
+    font-size: 0.9rem;
+}
+
+.source-links-toggle {
+    font-size: 0.8rem;
+    color: #6b7280;
+    transition: transform 0.2s ease;
+}
+
+.source-links-toggle.expanded {
+    transform: rotate(180deg);
+}
+
+.source-links-content {
+    padding: 0 1rem 1rem 1rem;
+    display: none;
+    animation: slideDown 0.3s ease-out;
+}
+
+.source-links-content.show {
+    display: block;
+}
+
+.source-link-item {
+    display: inline-block;
+    margin: 0.25rem 0.5rem 0.25rem 0;
+    padding: 0.5rem 0.75rem;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    text-decoration: none;
+    color: #374151;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.source-link-item:hover {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    text-decoration: none;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.source-link-item i {
+    margin-right: 0.4rem;
+    font-size: 0.8rem;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* Scrollbar styling */
 .chat-messages::-webkit-scrollbar {
     width: 6px;
@@ -1444,6 +1535,12 @@ function handleStreamingResponse(requestData, sendBtn) {
                                     scrollToBottom();
                                 }
                                 
+                            } else if (parsed.type === 'source') {
+                                // Handle source information display
+                                if (parsed.content && parsed.content.length > 0) {
+                                    displaySourceLinks(parsed.content);
+                                }
+                                
                             } else if (parsed.type === 'error') {
                                 hideTypingIndicator();
                                 showError(parsed.content);
@@ -1535,6 +1632,74 @@ function displayToolUsageMessage(content) {
     `;
     
     chatMessages.appendChild(toolMessageDiv);
+}
+
+function displaySourceLinks(sources) {
+    if (!sources || sources.length === 0) return;
+    
+    const chatMessages = document.getElementById('chatMessages');
+    const lastAiMessage = chatMessages.querySelector('.message-ai:last-child');
+    
+    if (lastAiMessage) {
+        // Check if sources already exist for this message
+        const existingSources = lastAiMessage.querySelector('.source-links-container');
+        if (existingSources) {
+            existingSources.remove(); // Remove existing to replace
+        }
+        
+        const sourceDiv = document.createElement('div');
+        sourceDiv.className = 'source-links-container';
+        
+        // Generate unique ID for this source container
+        const sourceId = 'sources-' + Date.now();
+        
+        let sourceLinksHtml = `
+            <div class="source-links-header" onclick="toggleSources('${sourceId}')">
+                <div class="source-links-title">
+                    <i class="fas fa-book-open"></i>
+                    <span>Study Material References (${sources.length})</span>
+                </div>
+                <i class="fas fa-chevron-down source-links-toggle" id="${sourceId}-toggle"></i>
+            </div>
+            <div class="source-links-content" id="${sourceId}-content">
+        `;
+        
+        // Group sources by document name to avoid duplicates
+        const uniqueSources = {};
+        sources.forEach(source => {
+            const key = `${source.document_name}_${source.page_number}`;
+            if (!uniqueSources[key]) {
+                uniqueSources[key] = source;
+            }
+        });
+        
+        Object.values(uniqueSources).forEach(source => {
+            const fileName = source.document_name || 'Unknown Document';
+            const pageNum = source.page_number || 1;
+            
+            // Create PDF link with page parameter
+            const pdfUrl = `/static/files/${fileName}#page=${pageNum}`;
+            
+            sourceLinksHtml += `
+                <a href="${pdfUrl}" 
+                   target="_blank" 
+                   class="source-link-item"
+                   title="Open ${fileName} at page ${pageNum}">
+                    <i class="fas fa-file-pdf"></i>
+                    ${fileName.replace('.pdf', '')}, page: ${pageNum}
+                </a>
+            `;
+        });
+        
+        sourceLinksHtml += '</div>';
+        sourceDiv.innerHTML = sourceLinksHtml;
+        
+        // Append to the message content
+        const messageContent = lastAiMessage.querySelector('.message-content');
+        messageContent.appendChild(sourceDiv);
+        
+        scrollToBottom();
+    }
 }
 
 function displayMessage(messageData) {
@@ -2404,23 +2569,201 @@ async function showExplanation() {
     
     if (explanationContent.style.display === 'none') {
         explanationContent.style.display = 'block';
-        explanationContent.innerHTML = '<div class="text-muted">Generating explanation...</div>';
+        explanationContent.innerHTML = '<div class="text-muted"><i class="fas fa-spinner fa-spin me-2"></i>Generating detailed explanation...</div>';
         showBtn.innerHTML = '<i class="fas fa-eye-slash me-1"></i> Hide Explanation';
+        showBtn.disabled = true;
         
-        // TODO: Stream explanation from AI
-        setTimeout(() => {
-            explanationContent.innerHTML = `
-                <h6>Explanation:</h6>
-                <p>This question tests your understanding of ${mockExamData.currentQuestionData.topic_name}. 
-                The correct answer is ${mockExamData.currentQuestionData.correct_option.toUpperCase()}) 
-                ${mockExamData.currentQuestionData.options[mockExamData.currentQuestionData.correct_option]}.</p>
-                <p><em>Detailed explanation will be generated by AI in the next phase.</em></p>
-            `;
-        }, 1000);
+        // Generate explanation using the AI endpoint
+        await generateExplanationStream();
+        
+        showBtn.disabled = false;
     } else {
         explanationContent.style.display = 'none';
         showBtn.innerHTML = '<i class="fas fa-book me-1"></i> Show Explanation';
     }
+}
+
+async function generateExplanationStream() {
+    const explanationContent = document.getElementById('explanationContent');
+    
+    if (!mockExamData.currentQuestionData) {
+        explanationContent.innerHTML = '<div class="text-danger">Error: No question data available</div>';
+        return;
+    }
+    
+    try {
+        // Prepare the message content for explanation generation
+        const isCorrect = String(mockExamData.selectedAnswer).toLowerCase() === String(mockExamData.currentQuestionData.correct_option).toLowerCase();
+        
+        const messageContent = `
+Question: ${mockExamData.currentQuestionData.question}
+
+Question JSON Data:
+${JSON.stringify(mockExamData.currentQuestionData, null, 2)}
+
+User's Response: ${mockExamData.selectedAnswer ? mockExamData.selectedAnswer.toUpperCase() : 'No answer selected'}
+
+Answer Status: ${isCorrect ? 'CORRECT' : 'INCORRECT'}
+        `.trim();
+        
+        const requestData = {
+            message: {
+                role: 'user',
+                content: messageContent
+            },
+            language: getCurrentLanguage(),
+            exam_type: examType
+        };
+        
+        // Stream the explanation
+        let explanationText = '';
+        let explanationSources = [];
+        
+        const response = await fetch('/generate_explanation', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestData)
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        
+        // Clear the loading message
+        explanationContent.innerHTML = '<div class="streaming-explanation"></div>';
+        const streamingDiv = explanationContent.querySelector('.streaming-explanation');
+        
+        function processExplanationStream() {
+            return reader.read().then(({ done, value }) => {
+                if (done) {
+                    // Add sources at the end if any
+                    if (explanationSources.length > 0) {
+                        addSourcesInlineToExplanation(streamingDiv, explanationSources);
+                    }
+                    return;
+                }
+                
+                const chunk = decoder.decode(value, { stream: true });
+                const lines = chunk.split('\n');
+                
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        const data = line.slice(6);
+                        
+                        if (data === '[DONE]') {
+                            // Add sources at the end if any
+                            if (explanationSources.length > 0) {
+                                addSourcesInlineToExplanation(streamingDiv, explanationSources);
+                            }
+                            return;
+                        }
+                        
+                        try {
+                            const parsed = JSON.parse(data);
+                            
+                            if (parsed.type === 'content' || parsed.type === 'final_content') {
+                                explanationText += parsed.content;
+                                
+                                // Convert markdown to HTML and update content
+                                const processedContent = explanationText.replace(/\n/g, '\n\n');
+                                const htmlContent = marked.parse(processedContent);
+                                streamingDiv.innerHTML = htmlContent;
+                                
+                            } else if (parsed.type === 'tool_usage') {
+                                // Show tool usage in explanation
+                                const toolUsageText = `\n\n*${parsed.content.replace(/\\n/g, ' ')}*\n\n`;
+                                explanationText += toolUsageText;
+                                const processedContent = explanationText.replace(/\n/g, '\n\n');
+                                const htmlContent = marked.parse(processedContent);
+                                streamingDiv.innerHTML = htmlContent;
+                                
+                            } else if (parsed.type === 'source') {
+                                // Store sources to add at the end
+                                if (parsed.content && parsed.content.length > 0) {
+                                    explanationSources = parsed.content;
+                                }
+                                
+                            } else if (parsed.type === 'error') {
+                                explanationContent.innerHTML = `<div class="text-danger">Error generating explanation: ${parsed.content}</div>`;
+                                return;
+                            }
+                        } catch (e) {
+                            console.error('Error parsing explanation SSE data:', e, data);
+                        }
+                    }
+                }
+                
+                return processExplanationStream();
+            });
+        }
+        
+        await processExplanationStream();
+        
+    } catch (error) {
+        console.error('Error generating explanation:', error);
+        explanationContent.innerHTML = '<div class="text-danger">Failed to generate explanation. Please try again.</div>';
+    }
+}
+
+function addSourcesInlineToExplanation(explanationDiv, sources) {
+    if (!sources || sources.length === 0) return;
+    
+    // Group sources by document name to avoid duplicates
+    const uniqueSources = {};
+    sources.forEach(source => {
+        const key = `${source.document_name}_${source.page_number}`;
+        if (!uniqueSources[key]) {
+            uniqueSources[key] = source;
+        }
+    });
+    
+    // Generate unique ID for explanation sources
+    const sourceId = 'exp-sources-' + Date.now();
+    
+    let sourceLinksHtml = `
+        <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 2px solid #e2e8f0; background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); border-radius: 1rem; border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow: hidden;">
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; cursor: pointer; transition: all 0.2s ease; user-select: none;" 
+                 onclick="toggleSources('${sourceId}')"
+                 onmouseover="this.style.background='rgba(255, 255, 255, 0.5)'"
+                 onmouseout="this.style.background='transparent'">
+                <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: 600; color: #4a5568; font-size: 0.9rem;">
+                    <i class="fas fa-book-open"></i>
+                    <span>Referenced Study Materials (${Object.keys(uniqueSources).length})</span>
+                </div>
+                <i class="fas fa-chevron-down" style="font-size: 0.8rem; color: #6b7280; transition: transform 0.2s ease;" id="${sourceId}-toggle"></i>
+            </div>
+            <div style="padding: 0 1rem 1rem 1rem; display: none;" id="${sourceId}-content">
+    `;
+    
+    Object.values(uniqueSources).forEach(source => {
+        const fileName = source.document_name || 'Unknown Document';
+        const pageNum = source.page_number || 1;
+        
+        // Create PDF link with page parameter
+        const pdfUrl = `/static/files/${fileName}#page=${pageNum}`;
+        
+        sourceLinksHtml += `
+            <a href="${pdfUrl}" 
+               target="_blank" 
+               style="display: inline-block; margin: 0.25rem 0.5rem 0.25rem 0; padding: 0.5rem 0.75rem; background: white; border: 1px solid #d1d5db; border-radius: 0.5rem; text-decoration: none; color: #374151; font-size: 0.85rem; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.1);"
+               onmouseover="this.style.background='linear-gradient(135deg, #667eea, #764ba2)'; this.style.color='white'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 2px 8px rgba(102, 126, 234, 0.3)';"
+               onmouseout="this.style.background='white'; this.style.color='#374151'; this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.1)';"
+               title="Open ${fileName} at page ${pageNum}">
+                <i class="fas fa-file-pdf" style="margin-right: 0.4rem; font-size: 0.8rem;"></i>
+                ${fileName.replace('.pdf', '')}, page: ${pageNum}
+            </a>
+        `;
+    });
+    
+    sourceLinksHtml += '</div></div>';
+    
+    // Append sources to the explanation content
+    explanationDiv.innerHTML += sourceLinksHtml;
 }
 
 function previousQuestion() {
@@ -2486,6 +2829,24 @@ function loadExamStats() {
     
     document.getElementById('completedExams').textContent = stats.completed || 0;
     document.getElementById('bestScore').textContent = stats.bestScore ? stats.bestScore + '%' : '--';
+}
+
+// Toggle sources visibility
+function toggleSources(sourceId) {
+    const content = document.getElementById(sourceId + '-content');
+    const toggle = document.getElementById(sourceId + '-toggle');
+    
+    if (content && toggle) {
+        if (content.style.display === 'none') {
+            content.style.display = 'block';
+            content.classList.add('show');
+            toggle.classList.add('expanded');
+        } else {
+            content.style.display = 'none';
+            content.classList.remove('show');
+            toggle.classList.remove('expanded');
+        }
+    }
 }
 
 // Auto-resize textarea

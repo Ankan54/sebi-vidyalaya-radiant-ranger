@@ -60,7 +60,8 @@ async def orchestrator_agent(messages):
     chat_history = [{"role": "system",
                     "content": f"""You are an experienced AI Tutor helping Users prepare for their SEBI Certification Exams.\
                         Always repond in {config.user_language} Language irrespective of the language of the user query.\
-                            Maintain a postive tone always. follow all information and instructions received from tools"""}] + chat_history
+                            Maintain a postive tone always. follow all information and instructions received from tools.\
+                    IMPORTANT: If there are any questions which are not related to SEBI or SEBI certification exam topics then let user know that you can not answer this."""}] + chat_history
     chat_history = convert_to_langchain_messages(chat_history)
     chunks = []
     try:
@@ -162,7 +163,7 @@ async def orchestrator_agent(messages):
                         }
                         yield f"data: {json.dumps(data)}\n\n"
                         await asyncio.sleep(0.01)
-    
+
     except Exception as e:
         error_data = {
             "type": "error", 
@@ -171,6 +172,20 @@ async def orchestrator_agent(messages):
         yield f"data: {json.dumps(error_data)}\n\n"
     
     # Send completion signal
+    if config.kb_results:
+        # Remove page_content from each source, keeping only metadata
+        sources = []
+        for obj in config.kb_results:
+            obj.pop('page_content', None)  # Remove page_content
+            sources.append(obj)  # Keep document_name and page_number
+        
+        source_data = {
+            "type": "source",
+            "content": sources
+        }
+        yield f"data: {json.dumps(source_data)}\n\n"
+        await asyncio.sleep(0.01)
+
     yield "data: [DONE]\n\n"
 
 exam_questions_dict = {"mf_foundation": 

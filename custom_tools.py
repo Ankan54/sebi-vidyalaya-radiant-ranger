@@ -161,7 +161,9 @@ class StudyMaterialSearchTool(BaseTool):
     """)
     
     def _run(self, query: str) -> str:
-        return search_knowledge_base(query)
+        output = search_knowledge_base(query)
+        config.kb_results = json.loads(output)
+        return output
 
 
 # exam_details_dict = {"mf_foundation": 
