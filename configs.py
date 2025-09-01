@@ -16,6 +16,6 @@ class Config:
     chroma_collection_name = ""
     exam_name = ""
     user_language = ""
-    kb_results = {}
+    kb_results = []
 
 config = Config()

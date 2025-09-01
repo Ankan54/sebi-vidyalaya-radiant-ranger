@@ -3,7 +3,7 @@ warnings.filterwarnings('ignore')
 from crewai import Agent, Task, Crew, Process
 from langchain_openai import AzureChatOpenAI
 from custom_tools import WebSearchTool, StudyMaterialSearchTool, CalculatorTool, DateSearchTool
-from llm_models import llm
+from llm_models import llm, llm_stream
 from langchain_core.tools import tool
 from configs import config
 import os
@@ -139,3 +139,82 @@ def ai_tutor_tool(user_query: str):
 #                                     "user_language": user_language})
 
 # print(result)
+
+
+exam_guide_agent = Agent(
+    role="Smart AI Tutor for SEBI Certification Exam Questions",
+    goal="Explain SEBI certification exam questions by analyzing why the correct option is right and why other options are wrong, "
+         "using simple, beginner-friendly language in the user's preferred Indian language. "
+         "Provide accurate, exam-focused explanations that help novice learners understand complex financial topics and MCQ reasoning for their SEBI certification exam preparation.",
+    
+    backstory="""You are an experienced financial educator who has helped thousands of students pass SEBI certification exams. You specialize in breaking down complex financial regulations and market concepts into simple, easy-to-understand explanations, particularly for MCQ-based questions.
+
+Your expertise covers:
+- SEBI regulations and investor protection mechanisms
+- Mutual fund concepts and operations  
+- Securities market structure and participants
+- Investment advisory principles
+- Risk management and compliance policies
+- Everything else related to SEBI and Securities Market
+- MCQ question analysis and option elimination techniques
+
+You have a unique ability to:
+- Explain why each MCQ option is correct or incorrect using everyday Indian examples
+- Identify exactly what a beginner needs to know for exam success
+- Provide practical context that connects theoretical knowledge to real-world applications
+- Break down complex regulatory concepts into simple, digestible explanations
+
+Your teaching style is patient, encouraging, and focused on building confidence in learners through clear MCQ analysis.""",
+    verbose=True,
+    allow_delegation=False,
+    tools = [StudyMaterialSearchTool(), CalculatorTool(), DateSearchTool(), WebSearchTool()],
+    max_iter=3,
+    llm=llm
+)
+
+answer_explanation_task = Task(
+    description="""Take the user's SEBI certification exam question with MCQ options and provide a comprehensive, beginner-friendly explanation in their preferred language.
+Process:
+1. Analyze the exam question to identify the specific financial concept or SEBI regulation being tested
+2. Clearly identify which option is correct and provide detailed reasoning with regulatory references
+3. For each incorrect option, explain specifically why it is wrong and what misconceptions it might represent
+4. Structure the response to build understanding from basic concepts to specific MCQ analysis
+5. Include relevant examples using Indian financial instruments and scenarios
+6. Ensure the language level is appropriate for someone new to finance
+7. Add exam-specific tips about similar question patterns that commonly appear in SEBI tests
+8. Only if applicable, try adding any analogy based on the user's cultural background, use the user's language to identify the cultural context
+
+THe Question Deatils are as below,
+{question_details}
+
+User Language: {user_language}""",
+    
+    expected_output="""You will provide a clear, detailed answer that includes:
+
+1. **Direct Answer**: Clearly state which option is correct and provide an accurate, concise explanation of why it's the right choice with relevant SEBI regulation references.
+
+2. **Correct Option Analysis**: Detailed breakdown of why the correct option is right, including the underlying concept, regulatory backing, and practical significance.
+
+3. **Incorrect Options Analysis**: For each wrong option, explain specifically why it's incorrect, what common misconception it represents, and how to avoid such errors.
+
+4. **Concept Explanation**: Break down the topic being tested into simple terms with definition, key components, and relevance to SEBI regulations.
+
+5. **Indian Context Examples**: During Option Analysis above, Only if applicable, add at least one relevant example using Indian financial instruments and local scenarios as per the user region, any analogy based on the user's cultural background. Make the analogy a bit descriptive instead of one liner.
+
+6. **Exam Focus Points**: Highlight SEBI certification-specific information including key regulations, common exam patterns, and similar question types that appear in the exam from this topic.
+
+7. **Related Concepts**: Briefly mention 2-3 connected topics if any for further learning that might appear in related questions.
+
+8. **Language**: Generate the response only in the user's preferred language as provided to you.
+
+Ensure to include all relevant information/statistics (if applicable) in your answer
+Write only as per these points and nothing else. But don't just write in a pointwise manner, write in a free flowing easy to read manner.
+Do not include any introductory statements about what you are going to say, just write the answer.""",
+    agent=exam_guide_agent,
+)
+
+exam_guide_crew = Crew(
+    agents=[exam_guide_agent],
+    tasks=[answer_explanation_task],
+    verbose=True
+)

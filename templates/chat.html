@@ -1346,7 +1346,8 @@ let mockExamData = {
     endTime: null,
     isExamActive: false,
     currentQuestionData: null,
-    selectedAnswer: null
+    selectedAnswer: null,
+    explanations: {} // Store explanations by question number
 };
 
 // Initialize when page loads
@@ -2369,7 +2370,8 @@ async function startMockExam() {
             endTime: null,
             isExamActive: true,
             currentQuestionData: null,
-            selectedAnswer: null
+            selectedAnswer: null,
+            explanations: {} // Store explanations by question number
         };
         
         // Load first question
@@ -2438,15 +2440,20 @@ function displayQuestion(questionData) {
     const optionsContainer = document.getElementById('questionOptions');
     optionsContainer.innerHTML = '';
     
-    Object.entries(questionData.options).forEach(([key, value]) => {
+    // Handle options array format: [{"a": "option text"}, {"b": "option text"}, ...]
+    questionData.options.forEach((optionObj) => {
+        // Each option is an object with single key-value pair like {"a": "option text"}
+        const optionLetter = Object.keys(optionObj)[0];
+        const optionText = optionObj[optionLetter];
+        
         const optionDiv = document.createElement('div');
         optionDiv.className = 'option-item';
-        optionDiv.onclick = () => selectOption(key, optionDiv);
-        optionDiv.setAttribute('data-option', key); // Add data attribute for debugging
+        optionDiv.onclick = () => selectOption(optionLetter, optionDiv);
+        optionDiv.setAttribute('data-option', optionLetter);
         
         optionDiv.innerHTML = `
-            <div class="option-letter">${key.toUpperCase()}</div>
-            <div class="option-text">${value}</div>
+            <div class="option-letter">${optionLetter.toUpperCase()}</div>
+            <div class="option-text">${optionText}</div>
         `;
         
         optionsContainer.appendChild(optionDiv);
@@ -2535,12 +2542,16 @@ function showAnswerFeedback(isCorrect, correctOption) {
     
     // Show correct answer if incorrect
     if (!isCorrect) {
-        const correctOptionText = mockExamData.currentQuestionData.options[correctOption];
-        console.log('Correct Answer Debug:', {
-            correctOption: correctOption,
-            correctOptionText: correctOptionText,
-            allOptions: mockExamData.currentQuestionData.options
-        });
+        // Find the correct option text from the array of objects format
+        const correctOptionObj = mockExamData.currentQuestionData.options.find(optionObj => 
+            Object.keys(optionObj)[0] === correctOption
+        );
+        
+        let correctOptionText = '';
+        if (correctOptionObj) {
+            correctOptionText = correctOptionObj[correctOption];
+        }
+        
         correctAnswerDiv.innerHTML = `<strong>Correct Answer:</strong> ${correctOption.toUpperCase()}) ${correctOptionText || 'Option text not available'}`;
         correctAnswerDiv.style.display = 'block';
     } else {
@@ -2569,14 +2580,23 @@ async function showExplanation() {
     
     if (explanationContent.style.display === 'none') {
         explanationContent.style.display = 'block';
-        explanationContent.innerHTML = '<div class="text-muted"><i class="fas fa-spinner fa-spin me-2"></i>Generating detailed explanation...</div>';
         showBtn.innerHTML = '<i class="fas fa-eye-slash me-1"></i> Hide Explanation';
-        showBtn.disabled = true;
         
-        // Generate explanation using the AI endpoint
-        await generateExplanationStream();
-        
-        showBtn.disabled = false;
+        // Check if explanation already exists for this question
+        const currentQuestionKey = mockExamData.currentQuestion;
+        if (mockExamData.explanations[currentQuestionKey]) {
+            // Load stored explanation
+            explanationContent.innerHTML = mockExamData.explanations[currentQuestionKey];
+        } else {
+            // Generate new explanation
+            explanationContent.innerHTML = '<div class="text-muted"><i class="fas fa-spinner fa-spin me-2"></i>Generating detailed explanation...</div>';
+            showBtn.disabled = true;
+            
+            // Generate explanation using the AI endpoint
+            await generateExplanationStream();
+            
+            showBtn.disabled = false;
+        }
     } else {
         explanationContent.style.display = 'none';
         showBtn.innerHTML = '<i class="fas fa-book me-1"></i> Show Explanation';
@@ -2607,10 +2627,7 @@ Answer Status: ${isCorrect ? 'CORRECT' : 'INCORRECT'}
         `.trim();
         
         const requestData = {
-            message: {
-                role: 'user',
-                content: messageContent
-            },
+            question: JSON.stringify(mockExamData.currentQuestionData),
             language: getCurrentLanguage(),
             exam_type: examType
         };
@@ -2703,6 +2720,10 @@ Answer Status: ${isCorrect ? 'CORRECT' : 'INCORRECT'}
         }
         
         await processExplanationStream();
+        
+        // Store the generated explanation for future use
+        const currentQuestionKey = mockExamData.currentQuestion;
+        mockExamData.explanations[currentQuestionKey] = explanationContent.innerHTML;
         
     } catch (error) {
         console.error('Error generating explanation:', error);
