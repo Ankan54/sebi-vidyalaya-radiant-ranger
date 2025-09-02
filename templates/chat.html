@@ -197,6 +197,120 @@ body {
     text-align: left;
 }
 
+/* Fact-check icon styles */
+.fact-check-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 0.5rem;
+}
+
+.fact-check-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    margin-left: auto;
+    position: relative;
+}
+
+.fact-check-icon:hover {
+    transform: scale(1.1);
+}
+
+.fact-check-initial {
+    background: #f8fafc;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+}
+
+.fact-check-initial:hover {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+}
+
+.fact-check-loading {
+    background: #667eea;
+    color: white;
+    animation: spin 1s linear infinite;
+}
+
+.fact-check-accurate {
+    background: #10b981;
+    color: white;
+}
+
+.fact-check-inaccurate {
+    background: #ef4444;
+    color: white;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Tooltip */
+.fact-check-icon[data-bs-toggle="tooltip"] {
+    position: relative;
+}
+
+/* Fact-check modal styles */
+.fact-check-modal .modal-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-bottom: none;
+}
+
+.fact-check-modal .modal-header .btn-close {
+    filter: invert(1);
+}
+
+.fact-check-result-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.fact-check-result-table th,
+.fact-check-result-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+    vertical-align: top;
+}
+
+.fact-check-result-table th {
+    background-color: #f8fafc;
+    font-weight: 600;
+    color: #374151;
+    width: 30%;
+}
+
+.accuracy-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.accuracy-true {
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+.accuracy-false {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
 .typing-indicator {
     display: flex;
     align-items: center;
@@ -1482,6 +1596,9 @@ function handleStreamingResponse(requestData, sendBtn) {
                             'role': 'assistant',
                             'content': aiMessageContent
                         });
+                        
+                        // Add fact-check icon to the last AI message
+                        addFactCheckIcon(currentAiMessage, aiMessageContent);
                     }
                     return;
                 }
@@ -1501,6 +1618,9 @@ function handleStreamingResponse(requestData, sendBtn) {
                                     'role': 'assistant',
                                     'content': aiMessageContent
                                 });
+                                
+                                // Add fact-check icon to the last AI message
+                                addFactCheckIcon(currentAiMessage, aiMessageContent);
                             }
                             return;
                         }
@@ -2886,5 +3006,223 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize exam stats
     loadExamStats();
 });
+
+// Fact-check functionality
+function addFactCheckIcon(messageElement, messageContent) {
+    if (!messageElement) return;
+    
+    const messageTime = messageElement.querySelector('.message-time');
+    if (!messageTime) return;
+    
+    // Check if fact-check icon already exists
+    const existingIcon = messageElement.querySelector('.fact-check-icon');
+    if (existingIcon) return;
+    
+    // Create fact-check container
+    const factCheckContainer = document.createElement('div');
+    factCheckContainer.className = 'fact-check-container';
+    
+    // Create fact-check icon
+    const factCheckIcon = document.createElement('button');
+    factCheckIcon.className = 'fact-check-icon fact-check-initial';
+    factCheckIcon.innerHTML = '<i class="fas fa-question"></i>';
+    factCheckIcon.setAttribute('data-bs-toggle', 'tooltip');
+    factCheckIcon.setAttribute('data-bs-placement', 'top');
+    factCheckIcon.setAttribute('title', 'Check for Accuracy');
+    
+    // Store message content for fact-checking
+    factCheckIcon.setAttribute('data-message-content', messageContent);
+    
+    // Add click event
+    factCheckIcon.addEventListener('click', function() {
+        const existingResult = factCheckIcon.getAttribute('data-fact-check-result');
+        if (existingResult) {
+            // Show cached result
+            showFactCheckResults(JSON.parse(existingResult));
+        } else {
+            // Perform new fact-check
+            performFactCheck(this, messageContent);
+        }
+    });
+    
+    factCheckContainer.appendChild(factCheckIcon);
+    
+    // Insert fact-check container after message time
+    const messageContentDiv = messageElement.querySelector('.message-content');
+    if (messageContentDiv) {
+        messageContentDiv.appendChild(factCheckContainer);
+    }
+    
+    // Initialize tooltip
+    if (typeof bootstrap !== 'undefined') {
+        new bootstrap.Tooltip(factCheckIcon);
+    }
+}
+
+function performFactCheck(iconElement, messageContent) {
+    // Get the last user question from chat history
+    let userQuestion = '';
+    for (let i = chatHistory.length - 1; i >= 0; i--) {
+        if (chatHistory[i].role === 'user') {
+            // Extract text content if it's an array (multimodal)
+            if (Array.isArray(chatHistory[i].content)) {
+                const textContent = chatHistory[i].content.find(item => item.type === 'text');
+                userQuestion = textContent ? textContent.text : '';
+            } else {
+                userQuestion = chatHistory[i].content;
+            }
+            break;
+        }
+    }
+    
+    // Change icon to loading state
+    iconElement.className = 'fact-check-icon fact-check-loading';
+    iconElement.innerHTML = '<i class="fas fa-spinner"></i>';
+    iconElement.disabled = true;
+    
+    // Update tooltip
+    const tooltip = bootstrap.Tooltip.getInstance(iconElement);
+    if (tooltip) {
+        tooltip.setContent({ '.tooltip-inner': 'Checking accuracy...' });
+    }
+    
+    // Prepare fact-check request
+    const factCheckData = {
+        user_query: userQuestion,
+        answer: messageContent,
+        language: getCurrentLanguage()
+    };
+    
+    // Send fact-check request
+    fetch('/fact_check', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(factCheckData)
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(result => {
+        // Update icon based on accuracy
+        const isAccurate = result.accurate || result.accuracy === true;
+        
+        iconElement.className = `fact-check-icon ${isAccurate ? 'fact-check-accurate' : 'fact-check-inaccurate'}`;
+        iconElement.innerHTML = `<i class="fas fa-${isAccurate ? 'check' : 'times'}"></i>`;
+        iconElement.disabled = false;
+        
+        // Update tooltip
+        const tooltip = bootstrap.Tooltip.getInstance(iconElement);
+        if (tooltip) {
+            tooltip.setContent({ '.tooltip-inner': isAccurate ? 'Accurate' : 'May have inaccuracies' });
+        }
+        
+        // Store fact-check result for popup
+        iconElement.setAttribute('data-fact-check-result', JSON.stringify(result));
+        
+        // Update click handler to show cached results
+        iconElement.onclick = function() {
+            showFactCheckResults(result);
+        };
+    })
+    .catch(error => {
+        console.error('Fact-check error:', error);
+        
+        // Reset icon to initial state
+        iconElement.className = 'fact-check-icon fact-check-initial';
+        iconElement.innerHTML = '<i class="fas fa-question"></i>';
+        iconElement.disabled = false;
+        
+        // Update tooltip
+        const tooltip = bootstrap.Tooltip.getInstance(iconElement);
+        if (tooltip) {
+            tooltip.setContent({ '.tooltip-inner': 'Fact-check failed. Click to retry.' });
+        }
+        
+        showError('Failed to perform fact-check. Please try again.');
+    });
+}
+
+function showFactCheckResults(result) {
+    // Create modal if it doesn't exist
+    let modal = document.getElementById('factCheckModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.className = 'modal fade fact-check-modal';
+        modal.id = 'factCheckModal';
+        modal.setAttribute('tabindex', '-1');
+        modal.setAttribute('aria-labelledby', 'factCheckModalLabel');
+        modal.setAttribute('aria-hidden', 'true');
+        modal.innerHTML = `
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="factCheckModalLabel">
+                            <i class="fas fa-search me-2"></i>
+                            Fact-Check Results
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" id="factCheckModalBody">
+                        <!-- Content will be populated dynamically -->
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        // Add event listener to properly clean up when modal is hidden
+        modal.addEventListener('hidden.bs.modal', function () {
+            // Remove backdrop and restore body scroll
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            backdrops.forEach(backdrop => backdrop.remove());
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+        });
+    }
+    
+    // Populate modal content
+    const modalBody = document.getElementById('factCheckModalBody');
+    const isAccurate = result.accurate || result.accuracy === true;
+    const confidenceScore = result.confidence_score || 'N/A';
+    const reason = result.reason || 'No detailed reason provided';
+    
+    modalBody.innerHTML = `
+        <table class="fact-check-result-table">
+            <tr>
+                <th>Accuracy Status</th>
+                <td>
+                    <span class="accuracy-badge ${isAccurate ? 'accuracy-true' : 'accuracy-false'}">
+                        <i class="fas fa-${isAccurate ? 'check' : 'times'} me-1"></i>
+                        ${isAccurate ? 'Accurate' : 'May have inaccuracies'}
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <th>Confidence Score</th>
+                <td>${confidenceScore}</td>
+            </tr>
+            <tr>
+                <th>Analysis</th>
+                <td style="white-space: pre-wrap;">${reason}</td>
+            </tr>
+        </table>
+    `;
+    
+    // Show modal with proper cleanup
+    if (typeof bootstrap !== 'undefined') {
+        const modalInstance = new bootstrap.Modal(modal, {
+            backdrop: true,
+            keyboard: true,
+            focus: true
+        });
+        modalInstance.show();
+    }
+}
 </script>
 {% endblock %}

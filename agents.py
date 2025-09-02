@@ -110,7 +110,7 @@ def ai_tutor_tool(user_query: str):
     Returns:
         The infromation required to Answer the question in Text format.
     """
-    config.kb_results = {}
+    config.kb_results = []
     if not config.exam_name:
         config.exam_name = "invest_advisor"
     if not config.user_language:
@@ -219,3 +219,59 @@ exam_guide_crew = Crew(
     tasks=[answer_explanation_task],
     verbose=True
 )
+
+
+fact_checker_agent = Agent(
+    role="Senior Fact Checker and Accuracy Analyst",
+    goal="Verify factual accuracy of text content against provided source materials and assess answer accuracy against user questions",
+    backstory="""You are an experienced fact-checker with expertise in information verification and accuracy analysis. \
+    You have worked for major news organizations and research institutions, specializing in distinguishing between \
+    factual claims and hypothetical examples. You understand that analogies, case studies, and hypothetical scenarios \ 
+    should not be fact-checked as they are illustrative rather than factual claims.""",
+    verbose=True,
+    allow_delegation=False,
+    memory=False, llm = llm
+)
+
+# Define the Fact Checking Task
+fact_check_task = Task(
+    description="""
+    Analyze the provided text content for factual accuracy and completeness.
+    
+    **Text Content to Check:**
+    {text_content}
+    
+    **Source Information:**
+    {source_content}
+
+    **Original User Question:**
+    {user_question}
+
+    **user_language**
+    {user_language}
+    
+    **Instructions:**
+    1. Identify factual claims in the text content (ignore analogies, hypothetical examples, case studies)
+    2. Verify these claims against the provided source information
+    3. If a user question is provided, assess whether the text content accurately addresses the question.
+    4. Focus only on verifiable facts, not opinions or illustrative examples
+    5. Consider both accuracy of facts and completeness of the answer.
+    6. If no factual claims are available then only analyse the correctness of the answer against the user question.
+    7. Only verify against the source content given, do not use any other external information.
+    8. Always write the reason in the given user language.
+    """,
+    agent=fact_checker_agent,
+    expected_output="""Provide your analysis as a JSON object with exactly these two fields:
+    - "accurate": boolean (true if content is factually accurate and accuractely addresses the question topics, false otherwise)
+    - "confidence_score": float (a value between 0 to 1, 1 being the highest confidence and 0 being the lowest confidence on accuracy.)
+    - "reason": string (pointwise explanation of your findings, including specific inaccuracies or gaps if any)
+    
+    Do not write anything else other than the JSON."""
+)
+
+fact_checker_crew = Crew(
+        agents=[fact_checker_agent],
+        tasks=[fact_check_task],
+        verbose=True,
+        memory=False
+    )

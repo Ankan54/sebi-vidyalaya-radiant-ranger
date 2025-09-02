@@ -6,7 +6,7 @@ from speech_service import SpeechService
 from orchestrator import orchestrator_agent, question_generator, explain_question_stream
 import logging, json
 from configs import config
-
+from agents import fact_checker_crew
 
 logger = logging.getLogger(__name__)
 
@@ -183,4 +183,39 @@ async def generate_explanation(request: Request):
         
     except Exception as e:
         logger.error(f"Explanation generation error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/fact_check")
+async def fact_check(request: Request):
+    """fact check a given answer against its source content and user question"""
+    try:
+        # Get JSON data from request body
+        data = await request.json()
+        
+        question = data.get('user_query', '')
+        language_code = data.get('language', 'en-US')
+        answer = data.get('answer', '')
+
+        if len(answer) <= 0:
+            raise HTTPException(status_code=400, detail="Answer is required")
+        
+        source_info =  ""
+        print(f"config.kb_results: {config.kb_results}")
+        for res in config.kb_results:
+            source_info += res.get("page_content") + "\n"
+        
+        # Set configuration for the explanation generation
+        config.user_language = LANGUAGE_MAPPING.get(language_code, 'English')
+
+        result = fact_checker_crew.kickoff(inputs={"user_question": question, 
+                                                "source_content": source_info,
+                                                "text_content": answer,
+                                                "user_language": config.user_language})
+        
+        # Stream response using the new explanation streaming function
+        return json.loads(str(result))
+        
+    except Exception as e:
+        logger.error(f"Fact Checking error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

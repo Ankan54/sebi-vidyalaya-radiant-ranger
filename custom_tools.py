@@ -162,7 +162,7 @@ class StudyMaterialSearchTool(BaseTool):
     
     def _run(self, query: str) -> str:
         output = search_knowledge_base(query)
-        config.kb_results = json.loads(output)
+        config.kb_results += json.loads(output)
         return output
 
 

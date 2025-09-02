@@ -93,7 +93,7 @@ async def orchestrator_agent(messages):
                                 "content": f"\\nSearching the Web for information",
                                 # "tool_name": tool_name
                             }
-                            yield f"data: {json.dumps(tool_data)}\n\n"
+                            yield f"data: {json.dumps(tool_data, ensure_ascii=False)}\n\n"
                             await asyncio.sleep(0.01)
                             result = get_web_search_result.invoke(tool_call['args'])
                             tool_message = ToolMessage(
@@ -109,7 +109,7 @@ async def orchestrator_agent(messages):
                                 "content": f"\\nCalling AI Tutor Agent for information",
                                 # "tool_name": tool_name
                             }
-                            yield f"data: {json.dumps(tool_data)}\n\n"
+                            yield f"data: {json.dumps(tool_data, ensure_ascii=False)}\n\n"
                             await asyncio.sleep(0.01)
                             result = ai_tutor_tool.invoke(tool_call['args'])
                             tool_message = ToolMessage(
@@ -126,7 +126,7 @@ async def orchestrator_agent(messages):
                                 "content": f"\\nUsing the Calculator",
                                 # "tool_name": tool_name
                             }
-                            yield f"data: {json.dumps(tool_data)}\n\n"
+                            yield f"data: {json.dumps(tool_data, ensure_ascii=False)}\n\n"
                             await asyncio.sleep(0.01)
                             result = calculator.invoke(tool_call['args'])
                             tool_message = ToolMessage(
@@ -141,11 +141,11 @@ async def orchestrator_agent(messages):
                             "type": "error",
                             "content": f"Error executing tool {tool_name}: {e}"
                         }
-                        yield f"data: {json.dumps(error_data)}\n\n"
+                        yield f"data: {json.dumps(error_data, ensure_ascii=False)}\n\n"
                 
                 # Send newline before final response
-                yield f"data: {json.dumps({'type': 'newline', 'content': '\\n'})}\n\n"
-                yield f"data: {json.dumps({'type': 'newline', 'content': 'Generating Final Response'})}\n\n"
+                yield f"data: {json.dumps({'type': 'newline', 'content': '\\n'}, ensure_ascii=False)}\n\n"
+                yield f"data: {json.dumps({'type': 'newline', 'content': 'Generating Final Response'}, ensure_ascii=False)}\n\n"
                 # Stream the final response after tool execution
                 for chunk in llm_with_tools.stream(chat_history):
                     if chunk.content:
@@ -153,7 +153,7 @@ async def orchestrator_agent(messages):
                             "type": "final_content",
                             "content": chunk.content
                         }
-                        yield f"data: {json.dumps(data)}\n\n"
+                        yield f"data: {json.dumps(data, ensure_ascii=False)}\n\n"
                         await asyncio.sleep(0.01)
             else:
                 # No tools needed - stream the response immediately
@@ -163,7 +163,7 @@ async def orchestrator_agent(messages):
                             "type": "content",
                             "content": chunk.content
                         }
-                        yield f"data: {json.dumps(data)}\n\n"
+                        yield f"data: {json.dumps(data, ensure_ascii=False)}\n\n"
                         await asyncio.sleep(0.01)
 
     except Exception as e:
@@ -171,21 +171,22 @@ async def orchestrator_agent(messages):
             "type": "error", 
             "content": f"Error in chat processing: {str(e)}"
         }
-        yield f"data: {json.dumps(error_data)}\n\n"
+        yield f"data: {json.dumps(error_data, ensure_ascii=False)}\n\n"
     
     # Send completion signal
     if config.kb_results:
         # Remove page_content from each source, keeping only metadata
         sources = []
         for obj in config.kb_results:
-            obj.pop('page_content', None)  # Remove page_content
-            sources.append(obj)  # Keep document_name and page_number
+            # obj.pop('page_content', None)  # Remove page_content
+            sources.append({"document_name": obj.get("document_name"),
+                            "page_number": obj.get("page_number")})
         
         source_data = {
             "type": "source",
             "content": sources
         }
-        yield f"data: {json.dumps(source_data)}\n\n"
+        yield f"data: {json.dumps(source_data, ensure_ascii=False)}\n\n"
         await asyncio.sleep(0.01)
 
     yield "data: [DONE]\n\n"
@@ -273,7 +274,7 @@ async def explain_question_stream(question: str):
         "type": "final_content",
         "content": str(final_reponse)
     }
-    yield f"data: {json.dumps(res_chunk)}\n\n"
+    yield f"data: {json.dumps(res_chunk, ensure_ascii=False)}\n\n"
     await asyncio.sleep(0.01)
     
     if config.kb_results:
@@ -287,7 +288,7 @@ async def explain_question_stream(question: str):
             "type": "source",
             "content": sources
         }
-        yield f"data: {json.dumps(source_data)}\n\n"
+        yield f"data: {json.dumps(source_data, ensure_ascii=False)}\n\n"
         await asyncio.sleep(0.01)
 
     yield "data: [DONE]\n\n"
