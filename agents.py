@@ -34,6 +34,7 @@ Your teaching style is patient, encouraging, and focused on building confidence 
     verbose=True,
     allow_delegation=False,
     tools = [StudyMaterialSearchTool(), CalculatorTool(), DateSearchTool(), WebSearchTool()], 
+    max_iter=2,
     llm=llm
 )
 
@@ -48,7 +49,7 @@ Process:
 5. Include relevant examples using Indian financial instruments and scenarios
 6. Ensure the language level is appropriate for someone new to finance
 7. Add exam-specific tips or important points that commonly appear in SEBI tests
-8. Only if appliable, try adding any analogy based on the user's cultural background, use the user's language to identify the cultural context.
+8. Only if appliable, try adding any case study related to the user's cultural background, use the user's language to identify the cultural context, so that the user may find it relatable with their life experiences.
 
 Exam Name: {exam_name}
 Exam Overview: {exam_overview}
@@ -63,7 +64,7 @@ User Language: {user_language}""",
 
 2. **Concept Explanation**: Break down the topic into simple terms with definition, key components, and relevance. only if the question is about conceptual topics and not general query about the exam.
 
-3. **Indian Context Examples**: Only if applicable, At least one relevant example using Indian financial instruments and local scenarios as per the user region, any analogy based on the user's cultural background. make the analogy a bit descriptive instead of one liner
+3. **Case Study**: During Option Analysis above, Only if applicable, add pointers for at least one relevant case study using Indian financial instruments and local scenarios as per the user region, cultural background.
 
 4. **Exam Focus Points**: Highlight SEBI certification-specific information including key regulations and common exam patterns. Explain the type of questions that can come in the exam from the concerned topic.
 
@@ -168,7 +169,7 @@ Your teaching style is patient, encouraging, and focused on building confidence 
     verbose=True,
     allow_delegation=False,
     tools = [StudyMaterialSearchTool(), CalculatorTool(), DateSearchTool(), WebSearchTool()],
-    max_iter=3,
+    max_iter=2,
     llm=llm
 )
 
@@ -182,7 +183,7 @@ Process:
 5. Include relevant examples using Indian financial instruments and scenarios
 6. Ensure the language level is appropriate for someone new to finance
 7. Add exam-specific tips about similar question patterns that commonly appear in SEBI tests
-8. Only if applicable, try adding any analogy based on the user's cultural background, use the user's language to identify the cultural context
+8. Only if applicable, try adding a case study on the topic based on the user's cultural background, use the user's language to identify the cultural context
 
 THe Question Deatils are as below,
 {question_details}
@@ -199,7 +200,7 @@ User Language: {user_language}""",
 
 4. **Concept Explanation**: Break down the topic being tested into simple terms with definition, key components, and relevance to SEBI regulations.
 
-5. **Indian Context Examples**: During Option Analysis above, Only if applicable, add at least one relevant example using Indian financial instruments and local scenarios as per the user region, any analogy based on the user's cultural background. Make the analogy a bit descriptive instead of one liner.
+5. **Case Study**: During Option Analysis above, Only if applicable, add pointers for at least one relevant case study using Indian financial instruments and local scenarios as per the user region, cultural background.
 
 6. **Exam Focus Points**: Highlight SEBI certification-specific information including key regulations, common exam patterns, and similar question types that appear in the exam from this topic.
 
